@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
 Automated Literature Ingestion Pipeline for Video Game Visual Testing Research
-Converts raw academic PDF papers into structured, provenance-rich Markdown using Microsoft MarkItDown.
+Converts raw academic PDF papers into structured, provenance-rich Markdown using academic-pdf2md (PyMuPDF4LLM + RapidOCR / Marker).
 
 Usage:
     # Convert all PDFs in papers/ directory:
     python scripts/convert_papers.py
 
-    # Using uv (no prior environment setup needed):
+    # Using uv:
     uv run scripts/convert_papers.py
 
     # Convert a specific PDF:
-    python scripts/convert_papers.py --file papers/04_benchmarks_and_datasets/VideoGameQA_Bench_2025.pdf
+    python scripts/convert_papers.py --file papers/04_benchmarks_and_datasets/Taesiri_2025_VideoGameQA_Bench.pdf
 
-    # Overwrite existing markdown files:
-    python scripts/convert_papers.py --overwrite
+    # Choose engine (fast or marker):
+    python scripts/convert_papers.py --engine fast
 """
 
 from __future__ import annotations
@@ -22,22 +22,16 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import re
+import shutil
+import subprocess
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 from typing import Optional
-
-try:
-    from markitdown import MarkItDown
-    import importlib.metadata
-    MARKITDOWN_VERSION = importlib.metadata.version("markitdown")
-except ImportError:
-    print("[ERROR] 'markitdown' is not installed.")
-    print("Install via: pip install 'markitdown[pdf]>=0.1.6' or run using: uv run scripts/convert_papers.py")
-    sys.exit(1)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -60,8 +54,9 @@ class PaperMetadata:
     year: Optional[str]
     sha256_hash: str
     converted_at: str
-    markitdown_version: str
+    converter_engine: str
     char_count: int
+    figures_count: int
     status: str = "success"
     error_message: Optional[str] = None
 
@@ -79,8 +74,6 @@ def infer_metadata_from_path(path: Path) -> tuple[Optional[str], Optional[str], 
         year = match.group("year")
         title = sanitize_filename_text(match.group("title"))
         return author, year, title
-    
-    # Fallback to cleaning stem
     return None, None, sanitize_filename_text(path.stem)
 
 
@@ -93,46 +86,73 @@ def compute_sha256(path: Path) -> str:
     return hasher.hexdigest()
 
 
-def render_markdown_with_frontmatter(metadata: PaperMetadata, content: str) -> str:
-    """Wrap converted text with standard YAML frontmatter."""
-    header_dict = {
-        "title": metadata.title,
-        "author": metadata.author,
-        "year": metadata.year,
-        "source_file": metadata.source_path,
-        "source_sha256": metadata.sha256_hash,
-        "converted_at": metadata.converted_at,
-        "markitdown_version": metadata.markitdown_version,
-        "char_count": metadata.char_count,
-    }
-    
-    lines = ["---"]
-    for k, v in header_dict.items():
-        if v is not None:
-            lines.append(f"{k}: {json.dumps(v, ensure_ascii=False)}")
-    lines.append("---\n")
-    return "\n".join(lines) + content
+def convert_with_academic_pdf2md(
+    pdf_path: Path,
+    output_folder: Path,
+    engine: str = "fast",
+) -> tuple[Path, int]:
+    """
+    Invoke academic-pdf2md to convert PDF to Markdown.
+    Returns (md_file_path, extracted_images_count).
+    """
+    cmd = [
+        "academic-pdf2md",
+        str(pdf_path.resolve()),
+        "-o",
+        str(output_folder.resolve()),
+        "-e",
+        engine,
+    ]
+    logger.info(f"Invoking: {' '.join(cmd)}")
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if result.returncode != 0:
+        raise RuntimeError(f"academic-pdf2md failed (code {result.returncode}): {result.stderr or result.stdout}")
+
+    paper_stem = pdf_path.stem
+    paper_dir = output_folder / paper_stem
+    md_file = paper_dir / f"{paper_stem}.md"
+    images_dir = paper_dir / "images"
+
+    if not md_file.exists():
+        # Fallback check directly under output_folder
+        alt_md = output_folder / f"{paper_stem}.md"
+        if alt_md.exists():
+            md_file = alt_md
+
+    img_count = len(list(images_dir.glob("*.png"))) if images_dir.exists() else 0
+
+    # Ensure all image links in markdown are normalized to relative 'images/...'
+    if md_file.exists():
+        content = md_file.read_text(encoding="utf-8", errors="replace")
+        norm_content = re.sub(r'!\[(.*?)\]\([^)]*?/images/([^)]+)\)', r'![\1](images/\2)', content)
+        if norm_content != content:
+            md_file.write_text(norm_content, encoding="utf-8")
+
+    return md_file, img_count
 
 
 def convert_single_pdf(
     pdf_path: Path,
     papers_dir: Path,
     output_dir: Path,
-    converter: MarkItDown,
+    engine: str = "fast",
     overwrite: bool = False,
 ) -> PaperMetadata:
-    """Convert one PDF file to Markdown using MarkItDown."""
+    """Convert one PDF file to Markdown preserving category directory hierarchy."""
     rel_path = pdf_path.relative_to(papers_dir)
-    target_md_path = output_dir / rel_path.with_suffix(".md")
-    target_md_path.parent.mkdir(parents=True, exist_ok=True)
+    category_dir = output_dir / rel_path.parent
+    paper_dir = category_dir / pdf_path.stem
+    target_md_path = paper_dir / f"{pdf_path.stem}.md"
 
     author, year, title = infer_metadata_from_path(pdf_path)
     file_hash = compute_sha256(pdf_path)
     timestamp = datetime.now(timezone.utc).isoformat()
 
     if target_md_path.exists() and not overwrite:
-        logger.info(f"Skipping existing: {target_md_path.name}")
+        logger.info(f"Skipping existing: {target_md_path}")
         existing_text = target_md_path.read_text(encoding="utf-8", errors="ignore")
+        images_dir = paper_dir / "images"
+        img_count = len(list(images_dir.glob("*.png"))) if images_dir.exists() else 0
         return PaperMetadata(
             source_path=rel_path.as_posix(),
             output_path=target_md_path.relative_to(output_dir).as_posix(),
@@ -141,45 +161,43 @@ def convert_single_pdf(
             year=year,
             sha256_hash=file_hash,
             converted_at=timestamp,
-            markitdown_version=MARKITDOWN_VERSION,
+            converter_engine=f"academic-pdf2md ({engine})",
             char_count=len(existing_text),
+            figures_count=img_count,
             status="skipped",
         )
 
-    logger.info(f"Converting: {rel_path.as_posix()} -> {target_md_path.name}")
+    logger.info(f"Converting: {rel_path.as_posix()} via academic-pdf2md...")
     try:
-        conversion_result = converter.convert_local(pdf_path)
-        markdown_text = conversion_result.markdown
+        md_file, img_count = convert_with_academic_pdf2md(pdf_path, category_dir, engine=engine)
+        char_count = len(md_file.read_text(encoding="utf-8", errors="ignore")) if md_file.exists() else 0
 
-        metadata = PaperMetadata(
+        return PaperMetadata(
             source_path=rel_path.as_posix(),
-            output_path=target_md_path.relative_to(output_dir).as_posix(),
+            output_path=md_file.relative_to(output_dir).as_posix(),
             title=title,
             author=author,
             year=year,
             sha256_hash=file_hash,
             converted_at=timestamp,
-            markitdown_version=MARKITDOWN_VERSION,
-            char_count=len(markdown_text),
+            converter_engine=f"academic-pdf2md ({engine})",
+            char_count=char_count,
+            figures_count=img_count,
             status="success",
         )
-
-        full_document = render_markdown_with_frontmatter(metadata, markdown_text)
-        target_md_path.write_text(full_document, encoding="utf-8")
-        return metadata
-
     except Exception as exc:
         logger.error(f"Failed to convert {pdf_path}: {exc}")
         return PaperMetadata(
             source_path=rel_path.as_posix(),
-            output_path=target_md_path.relative_to(output_dir).as_posix(),
+            output_path="",
             title=title,
             author=author,
             year=year,
             sha256_hash=file_hash,
             converted_at=timestamp,
-            markitdown_version=MARKITDOWN_VERSION,
+            converter_engine=f"academic-pdf2md ({engine})",
             char_count=0,
+            figures_count=0,
             status="error",
             error_message=str(exc),
         )
@@ -193,24 +211,25 @@ def generate_index_markdown(records: list[PaperMetadata], output_dir: Path) -> N
     total = len(records)
     successful = sum(1 for r in records if r.status in ("success", "skipped"))
     failed = total - successful
+    total_figs = sum(r.figures_count for r in records if r.status in ("success", "skipped"))
 
     lines = [
-        "# Research Paper Markdown Index",
+        "# Research Paper Academic Markdown Index",
         "",
-        "This directory contains full-text academic papers converted from PDF to Markdown using Microsoft MarkItDown for the systematic mapping study on **AI-Based Visual Bug Detection in Video Games**.",
+        "This repository contains full-text academic papers converted from PDF to high-fidelity Markdown using **`academic-pdf2md`** (PyMuPDF4LLM + RapidOCR layout analysis) for the systematic mapping study on **AI-Based Visual Bug Detection in Video Games**.",
         "",
         f"- **Total tracked papers:** {total}",
         f"- **Successfully processed:** {successful}",
+        f"- **Total extracted figure assets:** {total_figs}",
         f"- **Failed:** {failed}",
         f"- **Last Index Update:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}",
         "",
         "## Papers Catalog",
         "",
-        "| Year | First Author / Group | Title | Markdown Link | Source PDF | Status |",
-        "|---|---|---|---|---|---|",
+        "| Year | First Author / Group | Title | Converted Markdown | Figures | Engine | Status |",
+        "|---|---|---|---|---|---|---|",
     ]
 
-    # Sort primarily by year descending, then title
     sorted_records = sorted(
         records,
         key=lambda r: (r.year or "0000", r.title.lower()),
@@ -221,22 +240,21 @@ def generate_index_markdown(records: list[PaperMetadata], output_dir: Path) -> N
         year_str = r.year or "Unknown"
         author_str = r.author or "N/A"
         title_str = r.title
-        md_link = f"[{r.output_path}]({r.output_path})" if r.status != "error" else "Failed"
-        source_link = f"`{r.source_path}`"
+        md_link = f"[{Path(r.output_path).name}]({r.output_path})" if r.output_path else "Failed"
         lines.append(
-            f"| {year_str} | {author_str} | {title_str} | {md_link} | {source_link} | {r.status} |"
+            f"| {year_str} | {author_str} | {title_str} | {md_link} | {r.figures_count} imgs | {r.converter_engine} | {r.status} |"
         )
 
     lines.append("")
     lines.append("---")
-    lines.append("*Generated automatically by `scripts/convert_papers.py`.*")
+    lines.append("*Generated automatically by `scripts/convert_papers.py` using `academic-pdf2md`.*")
 
     index_file.write_text("\n".join(lines), encoding="utf-8")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Convert research PDFs into Markdown using Microsoft MarkItDown."
+        description="Convert research PDFs into clean Markdown using academic-pdf2md."
     )
     parser.add_argument(
         "--papers-dir",
@@ -249,6 +267,13 @@ def main() -> None:
         type=Path,
         default=Path("markdown"),
         help="Directory to save converted Markdown files (default: markdown/)",
+    )
+    parser.add_argument(
+        "--engine",
+        type=str,
+        choices=["fast", "marker"],
+        default="fast",
+        help="academic-pdf2md engine (fast or marker, default: fast)",
     )
     parser.add_argument(
         "--file",
@@ -268,9 +293,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    converter = MarkItDown()
     args.output_dir.mkdir(parents=True, exist_ok=True)
-
     records: list[PaperMetadata] = []
 
     if args.file:
@@ -281,16 +304,11 @@ def main() -> None:
             args.file,
             args.papers_dir if args.file.is_relative_to(args.papers_dir) else args.file.parent,
             args.output_dir,
-            converter,
+            engine=args.engine,
             overwrite=args.overwrite,
         )
         records.append(res)
     else:
-        # Batch convert all PDFs in papers_dir
-        if not args.papers_dir.exists():
-            logger.warning(f"Papers directory does not exist: {args.papers_dir}")
-            args.papers_dir.mkdir(parents=True, exist_ok=True)
-
         pdf_files = sorted(args.papers_dir.rglob("*.pdf"))
         logger.info(f"Found {len(pdf_files)} PDF files in {args.papers_dir}")
 
@@ -299,7 +317,7 @@ def main() -> None:
                 pdf_path,
                 args.papers_dir,
                 args.output_dir,
-                converter,
+                engine=args.engine,
                 overwrite=args.overwrite,
             )
             records.append(res)
@@ -307,7 +325,7 @@ def main() -> None:
     if not args.no_index and records:
         generate_index_markdown(records, args.output_dir)
 
-    logger.info("Batch conversion finished.")
+    logger.info("academic-pdf2md batch pipeline execution completed.")
 
 
 if __name__ == "__main__":
