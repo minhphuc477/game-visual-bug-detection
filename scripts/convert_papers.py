@@ -92,9 +92,36 @@ def convert_with_academic_pdf2md(
     engine: str = "fast",
 ) -> tuple[Path, int]:
     """
-    Invoke academic-pdf2md to convert PDF to Markdown.
+    Convert PDF to structured Markdown with extracted figures and tables.
+    Uses pure Python pymupdf4llm with CLI fallback.
     Returns (md_file_path, extracted_images_count).
     """
+    paper_stem = pdf_path.stem
+    paper_dir = output_folder / paper_stem
+    paper_dir.mkdir(parents=True, exist_ok=True)
+    images_dir = paper_dir / "images"
+    images_dir.mkdir(parents=True, exist_ok=True)
+    md_file = paper_dir / f"{paper_stem}.md"
+
+    # Try pure Python pymupdf4llm
+    try:
+        import pymupdf4llm
+        logger.info(f"Converting via pymupdf4llm: {pdf_path.name}")
+        md_text = pymupdf4llm.to_markdown(
+            str(pdf_path.resolve()),
+            write_images=True,
+            image_path=str(images_dir)
+        )
+        # Normalize image paths to relative 'images/...'
+        md_text = re.sub(r'!\[(.*?)\]\([^)]*?[/\\]images[/\\]([^)]+)\)', r'![\1](images/\2)', md_text)
+        md_file.write_text(md_text, encoding="utf-8")
+        img_count = len(list(images_dir.glob("*.png"))) + len(list(images_dir.glob("*.jpg")))
+        return md_file, img_count
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.warning(f"pymupdf4llm encountered: {e}, trying CLI...")
+
     cmd = [
         "academic-pdf2md",
         str(pdf_path.resolve()),
@@ -103,25 +130,18 @@ def convert_with_academic_pdf2md(
         "-e",
         engine,
     ]
-    logger.info(f"Invoking: {' '.join(cmd)}")
+    logger.info(f"Invoking CLI: {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if result.returncode != 0:
         raise RuntimeError(f"academic-pdf2md failed (code {result.returncode}): {result.stderr or result.stdout}")
 
-    paper_stem = pdf_path.stem
-    paper_dir = output_folder / paper_stem
-    md_file = paper_dir / f"{paper_stem}.md"
-    images_dir = paper_dir / "images"
-
     if not md_file.exists():
-        # Fallback check directly under output_folder
         alt_md = output_folder / f"{paper_stem}.md"
         if alt_md.exists():
             md_file = alt_md
 
     img_count = len(list(images_dir.glob("*.png"))) if images_dir.exists() else 0
 
-    # Ensure all image links in markdown are normalized to relative 'images/...'
     if md_file.exists():
         content = md_file.read_text(encoding="utf-8", errors="replace")
         norm_content = re.sub(r'!\[(.*?)\]\([^)]*?/images/([^)]+)\)', r'![\1](images/\2)', content)
