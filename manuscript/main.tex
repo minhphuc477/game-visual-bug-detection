@@ -126,6 +126,22 @@ Given an evaluation keyframe $I_t$ and an authoritative reference baseline $R_t$
 (V, D) = \mathcal{M}_{\text{VLM}}(I_t, R_t, Q; \Theta)
 \end{equation}
 
+\subsection{The End-to-End Game Visual QA Framework Pipeline}
+To bridge these four formal mathematical tasks into an operational engineering system, Figure~\ref{fig:pipeline} synthesizes the \textit{End-to-End Game Visual Quality Assurance Framework Pipeline}. The architecture structures automated visual inspection into four tightly integrated stages:
+\begin{enumerate}
+    \item \textbf{Stage 1 (Runtime Capture \& Engine Telemetry):} During active gameplay driven by headless playtesting bots or scripted paths, the graphics engine (Unreal Engine 5, Unity, Frostbite) extracts 60~FPS RGB frame buffers $I_t$, alongside synchronized 32-bit floating-point depth maps $D_t$, screen-space surface normal buffers $\mathbf{N}_t$, and physics collision bounding query logs $\mathcal{P}_t$.
+    \item \textbf{Stage 2 (Feature Representation \& Context Pools):} Multi-scale vision backbones (DINOv2, I-JEPA, ShuffleNetV2) extract compact patch representations. The runtime maintains a dynamic reference pool $\mathcal{R}$ indexing verified baseline renders (the ``Last Clean Frame'' $R_t$) via spatial camera hash tables, while accumulating continuous video sliding windows $\mathcal{S}_{[t-k:t]}$ for temporal defect isolation.
+    \item \textbf{Stage 3 (Multi-Paradigm AI Detection Core):} Extracted embeddings are evaluated across specialized detection engines: PatchCore memory banks $\phi(I_t)$ for zero-shot nominal deviation scoring, geometry-collider cross-check modules identifying depth-normal boundary discrepancies, spatio-temporal video transformers grounding transient intervals $[t_{\text{start}}, t_{\text{end}}]$, and pairwise multimodal VLMs performing chain-of-thought verification.
+    \item \textbf{Stage 4 (Defect Triage \& Automated QA Action):} Detected anomalies are classified under \texttt{VGVD-Taxonomy}, bounded by spatial coordinates $\mathcal{B}_t$ or masks $M_t$, and scored with confidence $s_k$. Sub-16.6~ms decisions yield immediate CI build assertions, while complex multi-modal defects trigger automated Jira/Bugzilla tickets complete with replay clips, engine state logs, and diagnostic rationales.
+\end{enumerate}
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.98\textwidth]{figures/figure7_qa_framework_pipeline.png}
+    \caption{End-to-End Game Visual Quality Assurance Framework Pipeline detailing the four integrated operational stages: Runtime Capture \& Engine Telemetry, Feature Representation \& Reference Context Pools, Multi-Paradigm AI Detection Engines, and Automated Defect Triage with CI Build Assertions.}
+    \label{fig:pipeline}
+\end{figure*}
+
 \subsection{Research Questions}
 This Systematic Mapping Study addresses six primary Research Questions (RQs):
 \begin{itemize}
@@ -322,9 +338,19 @@ CanvasBug-Bench \cite{macklon2022html5bugs} & 2022 & 2D Bitmaps (24 bugs, 10 HTM
 \end{tabularx}
 \end{table*}
 
+\subsection{Multi-Dimensional Benchmark Capability Footprint}
+To systematically examine the empirical strengths and blind spots across the benchmarking ecosystem, Figure~\ref{fig:benchmark_radar} compares six landmark benchmarks across six standardized capability dimensions (Art Style Diversity, Spatio-Temporal Dynamics, Annotation Granularity, Engine Telemetry Integration, Industrial Realism, and Open Accessibility). Strikingly, no single benchmark achieves comprehensive coverage across all six dimensions: high-diversity video benchmarks (e.g., VideoGlitchBench \cite{zheng2026glide}, Multi-Label Perceptual \cite{rifaat2026multilabel}) lack low-level engine telemetry hooks, while deep engine-state datasets (e.g., StateGlitch-3D \cite{kovacs2026stateaware}) remain proprietary. This structural divergence underscores the urgent need for unified open-science benchmarks that combine commercial-grade engine telemetry with broad multi-game diversity.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{figures/figure10_benchmark_radar.png}
+    \caption{Multi-Dimensional Capability Footprint comparing six landmark video game visual QA benchmarks across six standardized capability axes.}
+    \label{fig:benchmark_radar}
+\end{figure}
+
 \section{Empirical Meta-Analysis, Cross-Game Generalisation \& Failure Modes}
 
-\subsection{Meta-Analysis and Modality Breakdown}
+\subsection{Meta-Analysis, Modality Breakdown \& Operational Latency}
 As visualized in Figure~\ref{fig:modalities}:
 \begin{itemize}
     \item \textbf{Modality Split (Figure~\ref{fig:modalities}A):} 51.1\% ($n=23$) evaluate purely on static RGB screenshots, 31.1\% ($n=14$) on continuous video streams, and 17.8\% ($n=8$) fuse engine telemetry.
@@ -339,14 +365,31 @@ As visualized in Figure~\ref{fig:modalities}:
     \label{fig:modalities}
 \end{figure}
 
+\subsubsection{Operational Latency and The Pareto Frontier}
+Operational throughput dictates deployment feasibility across the game production lifecycle: (1) Real-Time Inline CI ($\le 16.6$~ms / $\ge 60$~FPS, e.g., Macklon et al. \cite{macklon2022html5bugs}, Ling et al. \cite{ling2020usingdeepcnn}); (2) Headless Playtest QA Servers ($16.6$--$150$~ms / $6.7$--$60$~FPS, e.g., Kovacs et al. \cite{kovacs2026stateaware}, Rifaat et al. \cite{rifaat2026multilabel}, Davarmanesh et al. \cite{davarmanesh2020automated}); and (3) Asynchronous Offline VLM Bug Triage ($>1.0$~s / $<1$~FPS, e.g., Yu et al. \cite{yu2026refglitch}, Taesiri et al. \cite{taesiri2025videogameqa}, Zheng et al. \cite{zheng2026glide}). Figure~\ref{fig:pareto_frontier} plots the operational latency vs. detection accuracy Pareto frontier, illustrating the trade-off envelope between inline sub-frame execution and deep semantic reasoning.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/figure9_latency_pareto_frontier.png}
+    \caption{Operational Latency vs. Detection Accuracy Pareto Frontier across primary algorithmic paradigms, partitioned into three operational deployment zones: Real-Time Inline CI ($\le 16.6$~ms), Headless Playtest QA Servers ($16.6$--$150$~ms), and Asynchronous Offline VLM Bug Triage ($>1.0$~s).}
+    \label{fig:pareto_frontier}
+\end{figure}
+
 \subsection{Forensic Diagnostic of Algorithmic Failure Modes}
-We identify four systemic algorithmic failure modes:
+By cross-referencing qualitative error logs and empirical failures across primary studies, we diagnose four systemic algorithmic failure modes, visualized in Figure~\ref{fig:failure_autopsy}:
 \begin{enumerate}
-    \item \textbf{VLM Spatial Blindness on Micro-Clipping:} Coarse patch tokenization ($14\times 14$ px) blurs narrow geometry boundary penetrations, causing $>70\%$ false negative rates on subtle clipping \cite{taesiri2025videogameqa, lu2026howfarvlms}.
-    \item \textbf{Temporal Needle-in-a-Haystack (NIAH) Collapse:} While VLMs score 78\% on isolated static frames, their glitch localization accuracy collapses to 1\%--19\% when searching for transient 1-second bugs across multi-minute continuous gameplay video \cite{taesiri2025videogameqa, zheng2026glide}.
-    \item \textbf{Context Poisoning in Reference Pools:} If an unflagged defect frame enters the clean reference pool, all subsequent identical defects are suppressed, driving false negative rates above 80\% \cite{yu2026refglitch}.
-    \item \textbf{CLIP Image RAG Confirmation Bias:} Retrieving reference frames via global visual similarity matches broad environmental biomes (desert sand, foliage) rather than defect tokens, degrading detection precision from 0.50 to 0.37 \cite{lu2026howfarvlms}.
+    \item \textbf{Panel A (VLM Spatial Blindness on Micro-Clipping):} Coarse ViT patch projection ($14\times 14$ or $16\times 16$ px) blurs narrow geometry boundary penetrations into nominal background embeddings, causing $>70\%$ false negative rates on subtle clipping \cite{taesiri2025videogameqa, lu2026howfarvlms}.
+    \item \textbf{Panel B (Temporal Needle-in-a-Haystack Collapse):} While foundation VLMs achieve $\sim 78\%$ accuracy on isolated cherry-picked frames, their glitch localization recall collapses to $1\%$--$19\%$ in continuous multi-minute gameplay video due to temporal attention dilution and uniform frame subsampling skipping transient 1-second glitches \cite{taesiri2025videogameqa, zheng2026glide, muller2026tempglitch}.
+    \item \textbf{Panel C (Reference Pool Context Poisoning):} When an unflagged defect frame leaks into the clean reference pool, subsequent identical bugs exhibit zero anomaly delta ($\Delta \approx 0$), driving false negative suppression rates above 80\% \cite{yu2026refglitch}.
+    \item \textbf{Panel D (CLIP Image RAG Confirmation Bias):} Global visual embeddings match macro-level environmental biomes (desert sand, foliage) rather than local defect tokens, retrieving irrelevant reference viewpoints and degrading detection precision from $0.50$ to $0.37$ (+26\% false alarms) \cite{lu2026howfarvlms}.
 \end{enumerate}
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/figure8_failure_mode_autopsy.png}
+    \caption{Forensic Visual Failure Mode Autopsy illustrating the four systemic algorithmic bottlenecks identified across the curated literature: (A) VLM Spatial Blindness on Micro-Clipping resulting from ViT coarse patch averaging; (B) Temporal Needle-in-a-Haystack (NIAH) Collapse in continuous video streams; (C) Reference Pool Context Poisoning under unflagged defect leakage; and (D) CLIP Image RAG Confirmation Bias caused by global background feature dominance.}
+    \label{fig:failure_autopsy}
+\end{figure*}
 
 \section{Open Research Challenges \& Conclusions (RQ6)}
 
@@ -370,7 +413,7 @@ We articulate five high-priority Open Research Challenges:
 This paper presents the first comprehensive systematic mapping study investigating Computer Vision and Vision-Language Models for automated visual quality assurance in video games. Analyzing 45 primary studies published between 2018 and November 2026, we structured detection methods into six architectural paradigms, established the 19-subtype \texttt{VGVD-Taxonomy}, audited cutting-edge open benchmarks, diagnosed four critical algorithmic failure modes, and articulated five prioritized Open Research Challenges. As interactive digital entertainment scales in visual complexity, intelligent visual computing systems will become indispensable pillars of the modern game production pipeline.
 
 \section*{Availability of Data and Materials}
-The systematic mapping study protocol, tailored search strings, extracted literature evidence database (\texttt{evidence\_table.csv}), itemized quality assessment matrix (\texttt{quality\_assessment\_scores.csv}), machine-readable visual bug taxonomy (\texttt{visual\_bug\_taxonomy.json}), and programmatic figure generation pipelines are publicly available at: \url{https://github.com/minhphuc477/game-visual-bug-detection}.
+The systematic mapping study protocol, tailored search strings, extracted literature evidence database (\path{evidence_table.csv}), itemized quality assessment matrix (\path{quality_assessment_scores.csv}), machine-readable visual bug taxonomy (\path{visual_bug_taxonomy.json}), and programmatic figure generation pipelines are publicly available at: \url{https://github.com/minhphuc477/game-visual-bug-detection}.
 
 \section*{Competing Interests}
 The authors declare that they have no competing interests.

@@ -100,3 +100,20 @@ T_{\text{inference}} + T_{\text{capture}} \le \frac{1}{\text{Target FPS}}
 1. **Inline Real-Time Assertion (60 FPS):** Requires $T_{\text{inference}} \le 16.6\text{ ms}$, achievable only by lightweight convolutional detectors (e.g., YOLOv8-Nano) or optimized TensorRT engines.
 2. **Near-Real-Time Automated Playtest Bots (15–30 FPS):** Requires $T_{\text{inference}} \le 33.3\text{--}66.7\text{ ms}$, compatible with patch-based anomaly detectors (PatchCore) and distilled vision transformers.
 3. **Offline Post-Session Video Triage:** $T_{\text{inference}} \ge 1.0\text{ s per frame}$, characteristic of large multimodal vision-language models (GPT-4o, Gemini 1.5 Pro), restricting their operational deployment to asynchronous bug report synthesis from recorded gameplay sessions.
+
+---
+
+## 2.7 Architectural Synthesis: The End-to-End Game Visual QA Framework Pipeline
+
+To unify the four mathematical formulations into a cohesive engineering architecture, Figure 7 presents the holistic **End-to-End Game Visual QA Framework Pipeline**. The pipeline bridges in-engine runtime rendering with modern automated software testing and bug triage across four sequential stages:
+
+![Figure 7: End-to-End Game Visual Quality Assurance Framework Pipeline](figures/figure7_qa_framework_pipeline.png)
+
+1. **Stage 1 (Runtime Capture & Engine Telemetry):** During autonomous or scripted gameplay, the game engine (Unreal Engine 5, Unity, or proprietary AAA engines) extracts synchronized multimodal streams: raw RGB frame buffers $I_t \in \mathbb{R}^{H \times W \times 3}$ at 60 FPS, floating-point depth maps $D_t$, screen-space surface normal buffers $\mathbf{N}_t$, and physics collision bounding queries $\mathcal{P}_t$. Autonomous exploration agents (RL playtest bots, scripted navmesh traversals) drive coverage across dynamic virtual environments.
+2. **Stage 2 (Feature Representation & Context Pools):** Multi-scale vision encoders (DINOv2 ViT, I-JEPA patch masking, lightweight ShuffleNetV2/ResNet-18) project high-dimensional frame buffers into compact latent embeddings. The system maintains a dynamic reference pool $\mathcal{R}$ indexing verified clean frames (the *Last Clean Frame* $R_t$ along the current camera trajectory) via spatial hash tables, while buffering continuous multi-frame sliding windows $\mathcal{S}_{[t-k:t]}$ for temporal defect analysis.
+3. **Stage 3 (Multi-Paradigm AI Detection Core):** Incoming representations are routed through specialized detection engines according to testing requirements:
+   - *Engine A (PatchCore Anomaly Scorer):* Computes nearest-neighbor distance against a memory bank of nominal gameplay patches to score pixel-level anomaly maps $\phi(I_t)$.
+   - *Engine B (Geometry-Collider Cross-Check):* Validates surface normal consistency and identifies geometric penetration anomalies by comparing depth discontinuities against physical collider bounds.
+   - *Engine C (Spatio-Temporal Video Grounding):* Leverages sliding-window temporal attention (ResNet-BiLSTM / Video Transformers) to detect transient glitches and estimate exact temporal boundaries $[t_{\text{start}}, t_{\text{end}}]$.
+   - *Engine D (Multimodal VLM Reflector):* Executes reference-conditioned pairwise reasoning using Chain-of-Thought prompting and multi-agent debate to suppress hallucinations and confirm complex semantic defects.
+4. **Stage 4 (Defect Triage & Automated QA Action):** Detected anomalies are mapped directly into the standardized `VGVD-Taxonomy` (`GEO`, `TEX`, `REN`, `ANI`, `UI`), localized via spatial bounding boxes $\mathcal{B}_t$ or binary segmentation masks $M_t$, and assigned calibrated confidence scores $s_k \in [0, 1]$. For inline CI assertions, sub-16.6 ms decisions trigger immediate build failure alerts; for complex defects, the system compiles automated Jira/Bugzilla tickets containing replay video clips, camera telemetry, engine call stacks, and AI diagnostic explanations.

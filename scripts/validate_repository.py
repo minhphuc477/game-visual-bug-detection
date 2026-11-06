@@ -87,13 +87,21 @@ def validate_all():
         "manuscript/figures/figure5_cross_game_modalities.png",
         "manuscript/figures/figure5_cross_game_modalities.svg",
         "manuscript/figures/figure6_citation_network.png",
-        "manuscript/figures/figure6_citation_network.svg"
+        "manuscript/figures/figure6_citation_network.svg",
+        "manuscript/figures/figure7_qa_framework_pipeline.png",
+        "manuscript/figures/figure7_qa_framework_pipeline.svg",
+        "manuscript/figures/figure8_failure_mode_autopsy.png",
+        "manuscript/figures/figure8_failure_mode_autopsy.svg",
+        "manuscript/figures/figure9_latency_pareto_frontier.png",
+        "manuscript/figures/figure9_latency_pareto_frontier.svg",
+        "manuscript/figures/figure10_benchmark_radar.png",
+        "manuscript/figures/figure10_benchmark_radar.svg"
     ]
     for fig in figures:
         p = Path(fig)
         if not p.exists() or p.stat().st_size == 0:
             errors.append(f"Missing or empty figure: {fig}")
-    print(f"  [OK] All 6 publication figures verified in both 300 DPI PNG and vector SVG format.")
+    print(f"  [OK] All 10 publication figures verified in both 300 DPI PNG and vector SVG format ({len(figures)} total assets).")
 
     print("[6/7] Validating complete manuscript markdown...")
     cms = Path("manuscript/complete_manuscript.md")

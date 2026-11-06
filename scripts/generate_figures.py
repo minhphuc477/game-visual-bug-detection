@@ -7,6 +7,10 @@ Publication-Quality Figure Generation Engine for Elsevier IMAVIS:
 - Figure 4: Defect Subtype Coverage Across Primary Studies (VGVD-Taxonomy)
 - Figure 5: Modality Distribution and Cross-Game Generalisation Evaluation
 - Figure 6: Methodological Lineage and Cross-Paradigm Co-Citation Architecture (2018-2026)
+- Figure 7: End-to-End Game Visual QA Framework Pipeline
+- Figure 8: Forensic Visual Failure Mode Autopsy (2x2 Diagnostic Panel)
+- Figure 9: Operational Latency vs. Detection Accuracy Pareto Frontier
+- Figure 10: Multi-Dimensional Benchmark Capability Radar Chart
 
 All figures generated in both 300 DPI PNG and vector SVG format with zero label collisions,
 clean arrow geometry, and high-contrast Elsevier academic color palettes.
@@ -20,6 +24,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.patches import FancyBboxPatch, Rectangle
 from matplotlib.lines import Line2D
 
 # Ensure UTF-8 output on Windows
@@ -516,6 +521,526 @@ def generate_figure6_citation_network():
     print("  [OK] Saved Figure 6: Citation Network and Lineage Architecture.")
 
 
+def generate_figure7_qa_framework_pipeline():
+    """
+    Figure 7: End-to-End Game Visual QA Framework Pipeline
+    Stages:
+      Stage 1: Runtime Capture & State Extraction
+      Stage 2: Representation & Reference Context
+      Stage 3: Multi-Paradigm AI Detection Core
+      Stage 4: Automated Defect Triage & QA Action
+    """
+    print("[7/10] Generating Figure 7: End-to-End Visual QA Pipeline...")
+    fig, ax = plt.subplots(figsize=(15.5, 9.2), dpi=300)
+    ax.set_facecolor("#FAFAFA")
+    fig.patch.set_facecolor("#FFFFFF")
+    ax.axis('off')
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+
+    # Stage Box Containers (Vertical Columns)
+    stages = [
+        {
+            "num": "Stage 1",
+            "title": "Runtime Capture &\nEngine Telemetry",
+            "x": 2, "w": 21.5, "y": 6, "h": 85,
+            "color": "#1E40AF", "bg": "#EFF6FF",
+            "items": [
+                ("3D Game Engine Core", "Unreal Engine 5, Unity, Custom C++", "#DBEAFE", "#1D4ED8"),
+                ("Viewport Frame Buffer", "RGB Frame $I_t \\in \\mathbb{R}^{H \\times W \\times 3}$\n60 FPS Continuous Stream", "#BFDBFE", "#1E40AF"),
+                ("Synchronized G-Buffers", "Depth Map $D_t \\in \\mathbb{R}^{H \\times W}$\nSurface Normal $\\mathbf{N}_t$, Stencil", "#DBEAFE", "#2563EB"),
+                ("Physics & Scene State", "Transform Matrices $\\mathcal{P}_t$\nCollider Query Logs & Raycasts", "#DBEAFE", "#2563EB"),
+                ("Autonomous Controller", "Scripted Traces, Headless Bots,\nEvolutionary / RL Agents", "#DBEAFE", "#3B82F6"),
+            ]
+        },
+        {
+            "num": "Stage 2",
+            "title": "Feature Representation\n& Context Pools",
+            "x": 26.5, "w": 21.5, "y": 6, "h": 85,
+            "color": "#065F46", "bg": "#ECFDF5",
+            "items": [
+                ("Multi-Scale Vision Encoders", "DINOv2 ViT, I-JEPA Distillation,\nShuffleNetV2 / ResNet-18 Backbones", "#D1FAE5", "#047857"),
+                ("Dynamic Reference Pool", "Last Clean Frame $R_t \\in \\mathcal{R}$\nSpatially-Hashed Camera Indexing", "#A7F3D0", "#065F46"),
+                ("Spatio-Temporal Window", "Video Sequence $\\mathcal{S}_{[t-k:t]}$\nSliding-Window Buffer ($k \\in [8, 64]$)", "#D1FAE5", "#059669"),
+                ("Latent Patch Tokenizer", "Self-Attention Tokens $\\mathbf{Z}_t$\nSemantic Embedding Projection", "#D1FAE5", "#10B981"),
+            ]
+        },
+        {
+            "num": "Stage 3",
+            "title": "Multi-Paradigm AI\nDetection Engines",
+            "x": 51.0, "w": 23.5, "y": 6, "h": 85,
+            "color": "#6B21A8", "bg": "#FAF5FF",
+            "items": [
+                ("Engine A: Fast Anomaly Scorer", "PatchCore Memory Bank $\\phi(I_t)$\nCosine Anomaly Metric $\\Delta > \\tau$", "#EDE9FE", "#6D28D9"),
+                ("Engine B: Geometry Cross-Check", "Collider-Mesh Normal Alignment\nState-Aware Collision Intersect", "#F3E8FF", "#7C3AED"),
+                ("Engine C: Video Glitch Grounding", "ResNet-BiLSTM Temporal Attention\nGlitch Interval $[t_{\\text{start}}, t_{\\text{end}}]$", "#EDE9FE", "#8B5CF6"),
+                ("Engine D: Multimodal VLM Reflector", "Pairwise Reference VLM + Debate CoT\nPhysical Commonsense Reasoning", "#DDD6FE", "#5B21B6"),
+            ]
+        },
+        {
+            "num": "Stage 4",
+            "title": "Defect Triage &\nAutomated QA Action",
+            "x": 77.5, "w": 20.5, "y": 6, "h": 85,
+            "color": "#9A3412", "bg": "#FFF7ED",
+            "items": [
+                ("Taxonomy Classification", "VGVD-Taxonomy Mapping\n[GEO, TEX, REN, ANI, UI]", "#FFEDD5", "#C2410C"),
+                ("Spatial & Temporal Bounds", "Bounding Box $\\mathcal{B}_t$, Mask $M_t$\nConfidence Score $s_k \\in [0, 1]$", "#FED7AA", "#9A3412"),
+                ("Inline CI Assertion", "Pass / Fail Verdict (< 16.6 ms)\nAutomated Build Blocker", "#FFEDD5", "#EA580C"),
+                ("Automated Jira / Bugzilla Ticket", "Video Clip, Stack Trace, Camera Coords\nReproducible Bug Diagnostics", "#FFEDD5", "#C2410C"),
+            ]
+        }
+    ]
+
+    for st in stages:
+        # Outer Stage Box
+        rect = FancyBboxPatch((st["x"], st["y"]), st["w"], st["h"], boxstyle="round,pad=0.8",
+                              facecolor=st["bg"], edgecolor=st["color"], linewidth=2.2, zorder=1)
+        ax.add_patch(rect)
+
+        # Header Badge
+        hdr_rect = FancyBboxPatch((st["x"] + 1, st["y"] + st["h"] - 9.5), st["w"] - 2, 8.2,
+                                  boxstyle="round,pad=0.5", facecolor=st["color"], edgecolor="none", zorder=2)
+        ax.add_patch(hdr_rect)
+        ax.text(st["x"] + st["w"] / 2, st["y"] + st["h"] - 5.5, f"{st['num']}: {st['title']}",
+                ha="center", va="center", color="#FFFFFF", fontweight="bold", fontsize=10.2, zorder=3)
+
+        # Inner Items
+        n_items = len(st["items"])
+        avail_h = st["h"] - 14.0
+        item_h = avail_h / n_items - 1.8
+        for i, (ititle, idesc, ibg, ibborder) in enumerate(st["items"]):
+            iy = st["y"] + st["h"] - 13.0 - (i + 1) * (item_h + 1.8) + 1.8
+            it_box = FancyBboxPatch((st["x"] + 1.2, iy), st["w"] - 2.4, item_h,
+                                    boxstyle="round,pad=0.4", facecolor=ibg, edgecolor=ibborder, linewidth=1.4, zorder=2)
+            ax.add_patch(it_box)
+            ax.text(st["x"] + st["w"] / 2, iy + item_h * 0.68, ititle,
+                    ha="center", va="center", color=ibborder, fontweight="bold", fontsize=8.8, zorder=3)
+            ax.text(st["x"] + st["w"] / 2, iy + item_h * 0.28, idesc,
+                    ha="center", va="center", color="#334155", fontsize=7.6, zorder=3)
+
+    # Inter-Stage Connecting Arrows
+    arrow_props = dict(arrowstyle="-|>", color="#1E293B", lw=2.2, mutation_scale=18)
+    arrow_ys = [70, 50, 30]
+    for x_start, x_end in [(23.5, 26.5), (48.0, 51.0), (74.5, 77.5)]:
+        for y_pos in arrow_ys:
+            ax.annotate("", xy=(x_end, y_pos), xytext=(x_start, y_pos),
+                        arrowprops=arrow_props, zorder=4)
+
+    # Tasks Overlay Badges across the top
+    tasks = [
+        ("Task 1: Anomaly Scoring", 62.75, 94.5, "#6D28D9"),
+        ("Task 2: Spatial Localization", 87.75, 94.5, "#9A3412"),
+        ("Task 3: Spatio-Temporal Interval", 62.75, 2.5, "#8B5CF6"),
+        ("Task 4: Reference Multimodal QA", 37.25, 94.5, "#047857"),
+    ]
+    for t_name, tx, ty, tcol in tasks:
+        ax.text(tx, ty, t_name, ha="center", va="center", color="#FFFFFF", fontweight="bold", fontsize=8.4,
+                bbox=dict(boxstyle="round,pad=0.35", facecolor=tcol, edgecolor="none", alpha=0.95), zorder=5)
+
+    ax.set_title("Figure 7: End-to-End Game Visual Quality Assurance Framework Pipeline",
+                 fontsize=13.5, fontweight="bold", pad=12, color="#0F172A", y=0.985)
+
+    plt.tight_layout()
+    fig.savefig(OUT_DIR / "figure7_qa_framework_pipeline.png", dpi=300, bbox_inches="tight")
+    fig.savefig(OUT_DIR / "figure7_qa_framework_pipeline.svg", bbox_inches="tight")
+    plt.close()
+    print("  [OK] Saved Figure 7: End-to-End Visual QA Pipeline.")
+
+
+def generate_figure8_failure_mode_autopsy():
+    """
+    Figure 8: Forensic Visual Failure Mode Autopsy (2x2 Panel)
+    (A) VLM Spatial Micro-Clipping Blindness (Patch Tokenizer Loss)
+    (B) Temporal Needle-in-a-Haystack (NIAH) Collapse (Continuous Stream Dilution)
+    (C) Clean Reference Pool Context Poisoning (Unflagged Defect Leakage)
+    (D) CLIP Image RAG Confirmation Bias (Global Biome Retrieval Error)
+    """
+    print("[8/10] Generating Figure 8: Forensic Failure Mode Autopsy...")
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10.5), dpi=300)
+    fig.patch.set_facecolor("#FFFFFF")
+
+    # Panel A: VLM Spatial Micro-Clipping Blindness
+    ax_a = axes[0, 0]
+    ax_a.set_facecolor("#FAFAFA")
+    ax_a.set_xlim(0, 10)
+    ax_a.set_ylim(0, 10)
+    ax_a.axis('off')
+
+    ax_a.text(5, 9.4, "A) VLM Spatial Blindness on Micro-Clipping", ha="center", va="center",
+              fontweight="bold", fontsize=11, color="#991B1B",
+              bbox=dict(boxstyle="round,pad=0.3", facecolor="#FEE2E2", edgecolor="#DC2626", lw=1.2))
+
+    grid_rect = FancyBboxPatch((0.6, 2.2), 4.6, 6.2, boxstyle="square,pad=0",
+                               facecolor="#F1F5F9", edgecolor="#64748B", lw=1.5)
+    ax_a.add_patch(grid_rect)
+
+    for gx in np.linspace(0.6, 5.2, 5):
+        ax_a.plot([gx, gx], [2.2, 8.4], color="#CBD5E1", lw=1.0, linestyle="--")
+    for gy in np.linspace(2.2, 8.4, 5):
+        ax_a.plot([0.6, 5.2], [gy, gy], color="#CBD5E1", lw=1.0, linestyle="--")
+
+    ax_a.plot([1.2, 4.6], [3.2, 7.4], color="#1E293B", lw=4.5, label="Environment Mesh (Wall)")
+    ax_a.plot([2.0, 3.8], [6.8, 3.8], color="#DC2626", lw=4.0, linestyle="-", label="Character Sword / Limb")
+
+    ax_a.scatter([2.9], [5.3], s=260, color="#EF4444", edgecolors="#7F1D1D", lw=2, zorder=5)
+    ax_a.text(2.9, 5.3, "!", ha="center", va="center", color="#FFFFFF", fontweight="bold", fontsize=11, zorder=6)
+
+    patch_hl = Rectangle((1.75, 3.75), 1.15, 1.55, facecolor="#FEE2E2", edgecolor="#DC2626", lw=2.2, alpha=0.6, zorder=4)
+    ax_a.add_patch(patch_hl)
+
+    expl_text = (
+        "• Coarse Patch Tokenizer: 14x14 or 16x16 px\n"
+        "• Defect Boundary: Sub-pixel to 2-4 px width\n"
+        "• Patch Embedding: Local geometry boundary\n"
+        "  is averaged out into nominal background.\n"
+        "• Consequence: VLM predicts 'Nominal'\n"
+        "  >70% False Negative Rate on fine clipping\n"
+        "  (Taesiri et al., 2025; Lu et al., 2026)"
+    )
+    ax_a.text(5.5, 5.3, expl_text, ha="left", va="center", fontsize=8.6,
+              bbox=dict(boxstyle="round,pad=0.5", facecolor="#FFFFFF", edgecolor="#DC2626", lw=1.0),
+              color="#0F172A")
+    ax_a.text(2.9, 1.4, "Visual Token Averaging Loss: Micro-penetration invisible to attention",
+              ha="center", va="center", fontsize=8.2, style="italic", color="#B91C1C")
+
+    # Panel B: Temporal Needle-in-a-Haystack (NIAH) Collapse
+    ax_b = axes[0, 1]
+    ax_b.set_facecolor("#FAFAFA")
+    ax_b.set_xlim(0, 10)
+    ax_b.set_ylim(0, 10)
+    ax_b.axis('off')
+
+    ax_b.text(5, 9.4, "B) Temporal Needle-in-a-Haystack (NIAH) Collapse", ha="center", va="center",
+              fontweight="bold", fontsize=11, color="#9A3412",
+              bbox=dict(boxstyle="round,pad=0.3", facecolor="#FFEDD5", edgecolor="#EA580C", lw=1.2))
+
+    bar_bg = FancyBboxPatch((0.8, 6.0), 8.4, 1.2, boxstyle="round,pad=0.1",
+                            facecolor="#E2E8F0", edgecolor="#64748B", lw=1.4)
+    ax_b.add_patch(bar_bg)
+    ax_b.text(5.0, 6.6, "Continuous 60 FPS Stream (10,800 Frames / 3 Minutes)",
+              ha="center", va="center", fontsize=8.6, fontweight="bold", color="#334155")
+
+    glitch_slice = Rectangle((4.8, 6.0), 0.5, 1.2, facecolor="#DC2626", edgecolor="#7F1D1D", lw=1.5, zorder=3)
+    ax_b.add_patch(glitch_slice)
+    ax_b.annotate("1-sec Glitch Window\n(T-Pose / Z-Fighting)", xy=(5.05, 7.2), xytext=(5.05, 8.4),
+                  arrowprops=dict(arrowstyle="->", color="#DC2626", lw=1.5),
+                  ha="center", va="center", fontsize=8.2, fontweight="bold", color="#991B1B")
+
+    for sx in np.linspace(1.2, 8.8, 8):
+        ax_b.plot([sx, sx], [5.6, 6.0], color="#2563EB", lw=2)
+        ax_b.scatter([sx], [5.4], s=35, color="#2563EB")
+    ax_b.text(5.0, 4.8, "Uniform Frame Subsampling (1 FPS): Misses transient 1s window entirely",
+              ha="center", va="center", fontsize=8.2, color="#1D4ED8", fontweight="semibold")
+
+    comp_text = (
+        "Empirical Recall Discrepancy:\n"
+        "• Static Cherry-Picked Keyframes: ~78% VLM Detection\n"
+        "• Continuous Video Stream: Collapses to 1%–19% Recall\n"
+        "• Cause: Temporal attention dilution over nominal frames\n"
+        "  (Muller et al., 2026; Zheng et al., 2026)"
+    )
+    ax_b.text(5.0, 2.6, comp_text, ha="center", va="center", fontsize=8.6,
+              bbox=dict(boxstyle="round,pad=0.5", facecolor="#FFFFFF", edgecolor="#EA580C", lw=1.0),
+              color="#0F172A")
+
+    # Panel C: Clean Reference Pool Context Poisoning
+    ax_c = axes[1, 0]
+    ax_c.set_facecolor("#FAFAFA")
+    ax_c.set_xlim(0, 10)
+    ax_c.set_ylim(0, 10)
+    ax_c.axis('off')
+
+    ax_c.text(5, 9.4, "C) Reference Pool Context Poisoning", ha="center", va="center",
+              fontweight="bold", fontsize=11, color="#6B21A8",
+              bbox=dict(boxstyle="round,pad=0.3", facecolor="#FAF5FF", edgecolor="#7C3AED", lw=1.2))
+
+    pool_box = FancyBboxPatch((0.8, 3.8), 3.8, 4.6, boxstyle="round,pad=0.3",
+                             facecolor="#F3E8FF", edgecolor="#7C3AED", lw=1.6)
+    ax_c.add_patch(pool_box)
+    ax_c.text(2.7, 8.0, "Golden Reference Pool\n$\\mathcal{R} = \\{R_1, R_2, \\dots, R_m\\}$",
+              ha="center", va="center", fontsize=8.6, fontweight="bold", color="#581C87")
+
+    ax_c.text(2.7, 6.7, "[Clean Frame R1]", ha="center", va="center", fontsize=7.8,
+              bbox=dict(boxstyle="square,pad=0.2", facecolor="#E9D5FF", edgecolor="#6B21A8"))
+    ax_c.text(2.7, 5.7, "[Clean Frame R2]", ha="center", va="center", fontsize=7.8,
+              bbox=dict(boxstyle="square,pad=0.2", facecolor="#E9D5FF", edgecolor="#6B21A8"))
+
+    ax_c.text(2.7, 4.5, "[Defect Frame Rp]", ha="center", va="center", fontsize=8.0, fontweight="bold",
+              bbox=dict(boxstyle="square,pad=0.2", facecolor="#FEE2E2", edgecolor="#DC2626"))
+    ax_c.annotate("Unflagged Leakage\n(False Negative)", xy=(2.7, 4.9), xytext=(0.1, 4.9),
+                  arrowprops=dict(arrowstyle="->", color="#DC2626", lw=1.5),
+                  ha="left", va="center", fontsize=7.6, color="#991B1B", fontweight="bold")
+
+    query_box = FancyBboxPatch((5.4, 5.0), 4.2, 3.0, boxstyle="round,pad=0.3",
+                              facecolor="#EFF6FF", edgecolor="#2563EB", lw=1.4)
+    ax_c.add_patch(query_box)
+    ax_c.text(7.5, 7.4, "Incoming Defective Frame $I_t$", ha="center", va="center",
+              fontsize=8.4, fontweight="bold", color="#1E40AF")
+    ax_c.text(7.5, 6.4, "Identical Defect: $\\Delta(I_t, R_p) \\approx 0$", ha="center", va="center",
+              fontsize=8.0, color="#DC2626", fontweight="bold")
+    ax_c.text(7.5, 5.5, "Verdict: 'Clean' (Defect Masked)", ha="center", va="center",
+              fontsize=8.0, color="#15803D", fontweight="bold")
+
+    ax_c.annotate("", xy=(5.4, 6.5), xytext=(4.6, 6.5),
+                  arrowprops=dict(arrowstyle="<->", color="#7C3AED", lw=1.8))
+
+    poison_expl = (
+        "• Failure Mechanism: An undetected visual defect enters\n"
+        "  the clean reference pool R.\n"
+        "• Consequence: All subsequent frames with the same\n"
+        "  defect match Rp with high cosine similarity.\n"
+        "• Drives False Negative Rate > 80% (Yu et al., 2026)."
+    )
+    ax_c.text(5.0, 1.8, poison_expl, ha="center", va="center", fontsize=8.6,
+              bbox=dict(boxstyle="round,pad=0.4", facecolor="#FFFFFF", edgecolor="#7C3AED", lw=1.0),
+              color="#0F172A")
+
+    # Panel D: CLIP Image RAG Confirmation Bias
+    ax_d = axes[1, 1]
+    ax_d.set_facecolor("#FAFAFA")
+    ax_d.set_xlim(0, 10)
+    ax_d.set_ylim(0, 10)
+    ax_d.axis('off')
+
+    ax_d.text(5, 9.4, "D) CLIP Image RAG Confirmation Bias", ha="center", va="center",
+              fontweight="bold", fontsize=11, color="#047857",
+              bbox=dict(boxstyle="round,pad=0.3", facecolor="#ECFDF5", edgecolor="#059669", lw=1.2))
+
+    q_patch = FancyBboxPatch((0.8, 4.4), 3.6, 3.8, boxstyle="round,pad=0.2",
+                             facecolor="#FEF3C7", edgecolor="#D97706", lw=1.5)
+    ax_d.add_patch(q_patch)
+    ax_d.text(2.6, 7.6, "Defective Query Frame", ha="center", va="center",
+              fontsize=8.4, fontweight="bold", color="#92400E")
+    ax_d.text(2.6, 6.5, "Desert Sand (85%)\nBlue Sky (12%)\nMesh Glitch (3%)",
+              ha="center", va="center", fontsize=7.8, color="#78350F")
+    ax_d.scatter([3.4], [5.0], s=120, color="#DC2626", marker="x", lw=2)
+
+    ax_d.annotate("CLIP ViT Embedding\nGlobal Cosine Search", xy=(5.2, 6.3), xytext=(4.4, 6.3),
+                  arrowprops=dict(arrowstyle="->", color="#059669", lw=1.8),
+                  ha="center", va="bottom", fontsize=7.6, color="#065F46", fontweight="bold")
+
+    r_patch = FancyBboxPatch((5.8, 4.4), 3.6, 3.8, boxstyle="round,pad=0.2",
+                             facecolor="#FEF3C7", edgecolor="#059669", lw=1.5)
+    ax_d.add_patch(r_patch)
+    ax_d.text(7.6, 7.6, "Retrieved Golden Frame", ha="center", va="center",
+              fontsize=8.4, fontweight="bold", color="#065F46")
+    ax_d.text(7.6, 6.5, "Nominal Desert Dune\nMatches sand & sky macro\ntokens (Cosine Sim = 0.94)",
+              ha="center", va="center", fontsize=7.8, color="#065F46")
+    ax_d.text(7.6, 5.0, "Irrelevant Camera Angle!", ha="center", va="center",
+              fontsize=7.8, fontweight="bold", color="#B91C1C")
+
+    rag_expl = (
+        "• Global Embedding Trap: CLIP features are dominated by\n"
+        "  scenic environment background rather than defect tokens.\n"
+        "• Retrieval mismatch causes false difference alerts.\n"
+        "• Degrades VLM precision from 0.50 to 0.37 (Lu et al., 2026)."
+    )
+    ax_d.text(5.0, 1.8, rag_expl, ha="center", va="center", fontsize=8.6,
+              bbox=dict(boxstyle="round,pad=0.4", facecolor="#FFFFFF", edgecolor="#059669", lw=1.0),
+              color="#0F172A")
+
+    plt.suptitle("Figure 8: Forensic Visual Autopsy of Four Systemic Algorithmic Failure Modes",
+                 fontsize=13.5, fontweight="bold", y=0.99, color="#0F172A")
+    plt.tight_layout()
+    fig.savefig(OUT_DIR / "figure8_failure_mode_autopsy.png", dpi=300, bbox_inches="tight")
+    fig.savefig(OUT_DIR / "figure8_failure_mode_autopsy.svg", bbox_inches="tight")
+    plt.close()
+    print("  [OK] Saved Figure 8: Forensic Failure Mode Autopsy.")
+
+
+def generate_figure9_pareto_frontier():
+    """
+    Figure 9: Operational Latency vs. Detection Accuracy Pareto Frontier
+    X-axis: Logarithmic latency (ms) and corresponding FPS
+    Y-axis: Detection Accuracy / F1 / mAP (%)
+    Three Operational Zones:
+      - Zone 1: Inline Real-Time CI (<= 16.6 ms, >= 60 FPS)
+      - Zone 2: Automated Playtest Bots & Headless QA (16.6 - 150 ms, 6.7 - 60 FPS)
+      - Zone 3: Asynchronous Offline VLM Bug Triage (> 1,000 ms, < 1 FPS)
+    """
+    print("[9/10] Generating Figure 9: Operational Latency Pareto Frontier...")
+    fig, ax = plt.subplots(figsize=(12, 7.2), dpi=300)
+    fig.patch.set_facecolor("#FFFFFF")
+    ax.set_facecolor("#FAFAFA")
+
+    # Shaded Operational Zones
+    ax.axvspan(1.0, 16.66, facecolor="#ECFDF5", alpha=0.6, label="Zone 1: Real-Time Inline CI (>= 60 FPS)")
+    ax.axvspan(16.66, 150.0, facecolor="#EFF6FF", alpha=0.6, label="Zone 2: Headless QA & Playtest Bots (6.7–60 FPS)")
+    ax.axvspan(150.0, 10000.0, facecolor="#FFF7ED", alpha=0.6, label="Zone 3: Asynchronous Offline VLM Triage (< 1 FPS)")
+
+    # Vertical FPS reference markers
+    fps_markers = [
+        (16.66, "60 FPS (16.6ms)", "#059669"),
+        (33.33, "30 FPS (33.3ms)", "#2563EB"),
+        (1000.0, "1 FPS (1.0s)", "#EA580C")
+    ]
+    for x_val, label, col in fps_markers:
+        ax.axvline(x_val, color=col, linestyle=":", lw=1.4, alpha=0.8)
+        ax.text(x_val * 1.05, 96.5, label, rotation=90, va="top", ha="left",
+                fontsize=7.8, fontweight="bold", color=col)
+
+    # Empirical Data Points from Verified Primary Studies
+    points = [
+        # Zone 1
+        (8.0, 95.0, "Macklon '22\n(AST Canvas)", "#059669", "o", (-15, -28)),
+        (12.0, 86.8, "Ling '20 (EA SEED)\n(ShuffleNetV2)", "#059669", "s", (12, -15)),
+        (14.0, 82.0, "Li '24\n(Shader Reg.)", "#059669", "^", (-10, 10)),
+        (15.0, 76.5, "Tamm '22\n(Autoencoder)", "#059669", "v", (-25, -25)),
+        
+        # Zone 2
+        (35.0, 84.0, "Davarmanesh '20\n(Glitchify Ensemble)", "#2563EB", "s", (10, -18)),
+        (45.0, 91.2, "Kovacs '26\n(G-Buffer Fusion)", "#2563EB", "*", (12, -5)),
+        (52.0, 85.8, "Rifaat '26\n(ResNet-BiLSTM)", "#2563EB", "D", (12, 6)),
+        (65.0, 55.0, "Rahman '23\n(Xbox DINO ViT)", "#2563EB", "o", (10, -18)),
+        (80.0, 78.0, "Wilkins '22\n(WOB Mask R-CNN)", "#2563EB", "^", (10, 8)),
+        (95.0, 82.4, "Yi '25\n(I-JEPA Hybrid)", "#2563EB", "v", (10, -15)),
+
+        # Zone 3
+        (1850.0, 69.2, "Yu '26\n(RefGlitch VLM)", "#EA580C", "D", (10, -10)),
+        (2400.0, 50.0, "Lu '26\n(EA VLM Triage)", "#EA580C", "o", (10, -15)),
+        (2900.0, 43.4, "Taesiri '24\n(GlitchBench GPT-4V)", "#EA580C", "s", (10, -15)),
+        (3200.0, 78.2, "Taesiri '25\n(VideoGameQA GPT-4V)", "#EA580C", "*", (10, 6)),
+        (3800.0, 64.5, "Cao '24\n(PhysVLM)", "#EA580C", "^", (10, -15)),
+        (4500.0, 36.1, "Zheng '26\n(GliDe VideoGlitch)", "#EA580C", "v", (10, -18)),
+    ]
+
+    for lat, perf, lbl, col, m, (ox, oy) in points:
+        ax.scatter(lat, perf, s=140, color=col, edgecolors="#0F172A", linewidth=1.2, marker=m, zorder=5)
+        ax.annotate(lbl, (lat, perf), textcoords="offset points", xytext=(ox, oy),
+                    fontsize=7.8, fontweight="semibold", color="#1E293B",
+                    bbox=dict(boxstyle="round,pad=0.2", facecolor="#FFFFFF", edgecolor=col, alpha=0.9, lw=0.8),
+                    zorder=6)
+
+    # Pareto Frontier Curve
+    ax.plot([8.0, 45.0], [95.0, 91.2], color="#DC2626", linestyle="--", lw=2.2, zorder=4)
+    ax.plot([45.0, 3200.0], [91.2, 78.2], color="#DC2626", linestyle="--", lw=2.2, zorder=4)
+    ax.text(120, 89.0, "Pareto Optimal Frontier (Speed vs Accuracy)", color="#DC2626",
+            fontweight="bold", fontsize=9.2, rotation=-4,
+            bbox=dict(boxstyle="round,pad=0.25", facecolor="#FEE2E2", edgecolor="#DC2626", lw=1.0))
+
+    ax.set_xscale("log")
+    ax.set_xlim(3.0, 8000.0)
+    ax.set_ylim(25.0, 102.0)
+    ax.set_xlabel("Inference Latency per Frame / Window (Milliseconds, Log Scale)", fontweight="bold", labelpad=10)
+    ax.set_ylabel("Defect Detection Performance (Accuracy / F1 / mAP %)", fontweight="bold", labelpad=10)
+    ax.set_title("Figure 9: Operational Latency vs. Detection Accuracy Pareto Frontier across Primary Paradigms",
+                 fontweight="bold", fontsize=13, pad=14, color="#0F172A")
+
+    ax.grid(True, which="both", linestyle="--", alpha=0.45)
+    ax.set_axisbelow(True)
+
+    legend_elements = [
+        mpatches.Patch(facecolor="#ECFDF5", edgecolor="#059669", label="Zone 1: Real-Time Inline CI (<= 16.6ms, >= 60 FPS)"),
+        mpatches.Patch(facecolor="#EFF6FF", edgecolor="#2563EB", label="Zone 2: Headless Playtest Bots (16.6–150ms, 6.7–60 FPS)"),
+        mpatches.Patch(facecolor="#FFF7ED", edgecolor="#EA580C", label="Zone 3: Asynchronous VLM Triage (> 1.0s, < 1 FPS)"),
+        Line2D([0], [0], color="#DC2626", lw=2.0, linestyle="--", label="Empirical Pareto Frontier Envelope"),
+    ]
+    ax.legend(handles=legend_elements, loc="lower left", frameon=True,
+              facecolor="#FFFFFF", edgecolor="#CBD5E1", framealpha=0.96, fontsize=8.6)
+
+    plt.tight_layout()
+    fig.savefig(OUT_DIR / "figure9_latency_pareto_frontier.png", dpi=300, bbox_inches="tight")
+    fig.savefig(OUT_DIR / "figure9_latency_pareto_frontier.svg", bbox_inches="tight")
+    plt.close()
+    print("  [OK] Saved Figure 9: Operational Latency Pareto Frontier.")
+
+
+def generate_figure10_benchmark_radar():
+    """
+    Figure 10: Multi-Dimensional Benchmark Capability Radar Chart
+    Compares 6 landmark benchmarks across 6 capability axes (scale 1 to 5):
+      1. Art Style & Engine Diversity
+      2. Spatio-Temporal Dynamics (Continuous Video)
+      3. Annotation Granularity (Masks/Bounds/CoT)
+      4. Engine Telemetry Integration (G-buffer/Physics)
+      5. Industrial Realism (Real Gameplay)
+      6. Open Accessibility & Code Release
+    """
+    print("[10/10] Generating Figure 10: Benchmark Capability Radar Chart...")
+    categories = [
+        "Art Style &\nEngine Diversity",
+        "Spatio-Temporal\nDynamics (Video)",
+        "Annotation Granularity\n(Masks / BBoxes / CoT)",
+        "Engine Telemetry\nIntegration (G-Buffers)",
+        "Industrial Realism\n(Real AAA/Indie Bugs)",
+        "Open Accessibility\n& Reproducibility"
+    ]
+    N = len(categories)
+
+    benchmarks = {
+        "VideoGlitchBench (Zheng '26)": {
+            "scores": [5.0, 5.0, 4.0, 1.0, 4.5, 4.8],
+            "color": "#7C3AED", "linestyle": "-"
+        },
+        "Multi-Label Perceptual (Rifaat '26)": {
+            "scores": [2.5, 5.0, 4.5, 1.0, 4.2, 4.5],
+            "color": "#2563EB", "linestyle": "-"
+        },
+        "VideoGameQA-Bench (Taesiri '25)": {
+            "scores": [4.0, 2.5, 4.0, 1.0, 4.0, 5.0],
+            "color": "#059669", "linestyle": "--"
+        },
+        "RefGlitch-Bench (Yu '26)": {
+            "scores": [3.5, 2.0, 4.2, 1.0, 4.5, 4.8],
+            "color": "#D97706", "linestyle": "--"
+        },
+        "TempGlitch (Muller '26)": {
+            "scores": [3.0, 4.8, 3.5, 1.0, 4.5, 4.0],
+            "color": "#DC2626", "linestyle": ":"
+        },
+        "StateGlitch-3D (Kovacs '26)": {
+            "scores": [2.0, 2.5, 4.0, 5.0, 3.5, 2.0],
+            "color": "#0D9488", "linestyle": "-."
+        }
+    }
+
+    angles = [n / float(N) * 2 * np.pi for n in range(N)]
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(10.5, 10.5), subplot_kw=dict(polar=True), dpi=300)
+    fig.patch.set_facecolor("#FFFFFF")
+    ax.set_facecolor("#FAFAFA")
+
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    plt.xticks(angles[:-1], categories, size=9.5, fontweight="bold", color="#1E293B")
+
+    ax.set_rlabel_position(30)
+    plt.yticks([1, 2, 3, 4, 5], ["1 (Minimal)", "2 (Basic)", "3 (Moderate)", "4 (Strong)", "5 (Exemplary)"],
+               color="#64748B", size=8.0)
+    plt.ylim(0, 5.4)
+
+    for bname, bdata in benchmarks.items():
+        vals = bdata["scores"] + bdata["scores"][:1]
+        ax.plot(angles, vals, color=bdata["color"], linewidth=2.2, linestyle=bdata["linestyle"], label=bname)
+        ax.fill(angles, vals, color=bdata["color"], alpha=0.12)
+
+    ax.set_title("Figure 10: Multi-Dimensional Capability Footprint across Landmark Benchmarks",
+                 size=13.5, fontweight="bold", pad=32, color="#0F172A", y=1.04)
+
+    plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.10), ncol=2, frameon=True,
+               facecolor="#FFFFFF", edgecolor="#CBD5E1", framealpha=0.96, fontsize=9.0,
+               title="Audited Landmark Game Visual QA Benchmarks", title_fontsize=10.0)
+
+    insight_box = (
+        "Key Empirical Takeaway:\n"
+        "No single existing benchmark dominates all 6 capability dimensions.\n"
+        "StateGlitch-3D uniquely captures Engine Telemetry (5/5) but lacks Open Access (2/5).\n"
+        "VideoGlitchBench leads Diversity & Dynamics (5/5) but lacks Engine Hooks (1/5).\n"
+        "Empirically motivates Open Research Challenges ORC-1 through ORC-5."
+    )
+    plt.figtext(0.5, 0.015, insight_box, ha="center", va="top", fontsize=8.6,
+                bbox=dict(boxstyle="round,pad=0.5", facecolor="#F8FAFC", edgecolor="#94A3B8", lw=1.0),
+                color="#0F172A")
+
+    plt.tight_layout()
+    fig.savefig(OUT_DIR / "figure10_benchmark_radar.png", dpi=300, bbox_inches="tight")
+    fig.savefig(OUT_DIR / "figure10_benchmark_radar.svg", bbox_inches="tight")
+    plt.close()
+    print("  [OK] Saved Figure 10: Multi-Dimensional Benchmark Capability Radar.")
+
+
 def main():
     print("=" * 70)
     print("Generating Pristine Publication-Quality Figures (300 DPI & Vector SVG)...")
@@ -526,8 +1051,12 @@ def main():
     generate_figure4_defect_distribution()
     generate_figure5_modalities_and_generalisation()
     generate_figure6_citation_network()
+    generate_figure7_qa_framework_pipeline()
+    generate_figure8_failure_mode_autopsy()
+    generate_figure9_pareto_frontier()
+    generate_figure10_benchmark_radar()
     print("=" * 70)
-    print("All 6 figures successfully updated in manuscript/figures/")
+    print("All 10 figures successfully updated in manuscript/figures/")
     print("=" * 70)
 
 

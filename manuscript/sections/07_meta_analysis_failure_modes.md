@@ -10,11 +10,17 @@ Synthesizing experimental findings across the 45 primary studies reveals clear o
 - **Spatio-Temporal Video Streams: 31.1% (n = 14).** Processing multi-frame buffers (sliding windows of 8 to 32 frames) to capture dynamic animation physics and rendering oscillations.
 - **Multimodal Engine Telemetry Fusion: 17.8% (n = 8).** Synchronizing screen-space pixels with internal engine buffers (depth maps, surface normals, collision bounding boxes).
 
-### 7.1.2 Operational Inference Latency (RQ4)
+### 7.1.2 Operational Inference Latency & The Pareto Frontier (RQ4)
 Operational throughput dictates where an AI detector can be deployed in the game production lifecycle:
-1. **Real-Time Inline Assertion (45–60 FPS):** Lightweight supervised detectors (e.g., YOLOv8-Nano, MobileNetV3) achieve inference times of $14\text{--}18\text{ ms}$, operating directly within continuous integration (CI) automated playtests without throttling game engine execution.
-2. **Near-Real-Time Playtest Inspection (15–25 FPS):** Patch-based anomaly detectors (PatchCore, FastFlow) require $40\text{--}65\text{ ms}$ per frame, viable for dedicated headless QA server clusters.
-3. **Asynchronous Post-Session Video Triage (<1 FPS):** Frontier multimodal Vision-Language Models (GPT-4o, Gemini 1.5 Pro, Claude 3.5 Sonnet) require **$1.2\text{ to }2.8\text{ seconds per frame}$**. This extreme latency prevents live deployment, restricting VLMs to asynchronous batch processing of recorded playtest sessions.
+1. **Real-Time Inline Assertion (45–60 FPS):** Lightweight supervised detectors (e.g., ShuffleNetV2, YOLOv8-Nano) achieve inference times of $8\text{--}16.6\text{ ms}$, operating directly within continuous integration (CI) automated playtests without throttling game engine execution.
+2. **Near-Real-Time Playtest Inspection (15–25 FPS):** Patch-based anomaly detectors (PatchCore, FastFlow) and multi-modal state-aware fusion engines require $35\text{--}95\text{ ms}$ per frame, viable for dedicated headless QA server clusters.
+3. **Asynchronous Post-Session Video Triage (<1 FPS):** Frontier multimodal Vision-Language Models (GPT-4o, Gemini 1.5 Pro, Claude 3.5 Sonnet) require **$1.8\text{ to }4.5\text{ seconds per frame/window}$**. This high latency prevents live deployment, restricting VLMs to asynchronous batch processing of recorded playtest sessions.
+
+To visualize these critical engineering trade-offs, Figure 9 plots the **Operational Latency vs. Detection Accuracy Pareto Frontier** across all primary algorithmic paradigms:
+
+![Figure 9: Operational Latency vs. Detection Accuracy Pareto Frontier](figures/figure9_latency_pareto_frontier.png)
+
+The empirical Pareto envelope illustrates that high-speed inline assertions (Zone 1: $\le 16.6$ ms, $\ge 60$ FPS) achieve high accuracy on specialized structural domains (e.g., Macklon et al.'s 95% on 2D HTML5 canvas ASTs, Ling et al.'s 86.8% accuracy with ShuffleNetV2). In Zone 2 ($16.6$--$150$ ms), Kovacs et al.'s G-buffer fusion achieves a benchmark-leading 91.2% precision by synchronizing geometry telemetry, and Rifaat et al.'s ResNet18-BiLSTM achieves an 85.8% micro F1 score on multi-label video clips at 52 ms latency. In Zone 3 ($>1.0$ s), foundation VLMs provide open-ended natural-language bug reporting and pairwise reference diffing (Yu et al., F1: 0.69 at 1,850 ms; Taesiri et al., 78.2% coarse accuracy at 3,200 ms), but incur a $100\times$ to $300\times$ latency penalty that confines them to asynchronous offline triage.
 
 ---
 
@@ -34,29 +40,19 @@ Where cross-game domain transfer was quantitatively reported, models exhibited s
 ---
 
 ## 7.3 Forensic Diagnostic of Core Algorithmic Failure Modes
-By cross-referencing qualitative failure cases across primary studies, we diagnose four systemic algorithmic failure modes:
 
-```mermaid
-flowchart TD
-    F1["<b>Failure Mode 1: VLM Spatial Blindness</b><br/>Patch projection (14x14 px) blurs micro-clipping & subtle boundary penetration"]
-    F2["<b>Failure Mode 2: Temporal NIAH Collapse</b><br/>Attention dilution across multi-minute video drops localization from 78% to 1-19%"]
-    F3["<b>Failure Mode 3: Context Poisoning in Reference Pools</b><br/>Unflagged glitch entering reference buffer causes 84% false negative suppression"]
-    F4["<b>Failure Mode 4: CLIP Image RAG Confirmation Bias</b><br/>Visual similarity matches global biomes (desert/snow) rather than localized bugs"]
+By cross-referencing qualitative failure cases and empirical error logs across the 45 primary studies, we diagnose four systemic algorithmic failure modes. Figure 8 provides a comprehensive **Forensic Visual Autopsy** illustrating the failure mechanisms across four distinct visual diagnostic panels:
 
-    F1 --> Impact["<b>High False Alarms & Missed Defects in Production</b>"]
-    F2 --> Impact
-    F3 --> Impact
-    F4 --> Impact
-```
+![Figure 8: Forensic Visual Autopsy of Four Systemic Algorithmic Failure Modes](figures/figure8_failure_mode_autopsy.png)
 
-### 1. Spatial Blindness of Foundation VLMs on Micro-Clipping
-Modern Vision-Language Models tokenize input images via coarse patch projection (e.g., $14 \times 14$ or $16 \times 16$ pixel patches in ViT backbones). In video games, severe geometric clipping frequently occupies sub-pixel or narrow screen regions—such as a character's sword hilt penetrating hand armor, or a shoe sole sinking 2 inches into stone pavement (`GEO-01`). Taesiri et al. [1] and Lu et al. [17] demonstrated that self-attention layers smooth out localized high-frequency boundary gradients, resulting in **false negative rates exceeding 70%** on subtle clipping.
+### 1. Panel A: Spatial Blindness of Foundation VLMs on Micro-Clipping
+Modern Vision-Language Models tokenize input images via coarse patch projection (e.g., $14 \times 14$ or $16 \times 16$ pixel patches in ViT backbones). In video games, severe geometric clipping frequently occupies sub-pixel or narrow screen regions—such as a character's sword hilt penetrating hand armor, or a shoe sole sinking 2 inches into stone pavement (`GEO-01`). As visualized in Figure 8A, when a sub-pixel polygonal interpenetration falls within a single coarse ViT patch, spatial self-attention layers smooth out localized high-frequency boundary gradients against the surrounding nominal environment pixels. Consequently, the local anomaly is completely diluted into the dominant background token embedding, resulting in **false negative rates exceeding 70%** on subtle clipping (Taesiri et al., 2025; Lu et al., 2026).
 
-### 2. Catastrophic Temporal Needle-in-a-Haystack (NIAH) Collapse
-When evaluated on isolated static screenshots, frontier VLMs achieve respectable bug detection accuracy ($\sim 78\%\text{--}82\%$) [1]. However, when deployed on long-horizon gameplay videos (5 to 30 minutes of continuous recording), performance collapses catastrophically. In temporal Needle-in-a-Haystack (NIAH) evaluations, where the model must identify the exact second a 1-second animation glitch occurs within a 10-minute clip, **VLM localization accuracy collapsed to $1\%\text{ to }19\%$** [1]. The self-attention mechanism suffers severe temporal dilution, distributing attention weights across thousands of benign gameplay frames while overlooking transient glitch spikes.
+### 2. Panel B: Catastrophic Temporal Needle-in-a-Haystack (NIAH) Collapse
+When evaluated on isolated, cherry-picked static screenshots, frontier VLMs achieve respectable bug detection accuracy ($\sim 78\%\text{--}82\%$). However, when deployed on long-horizon continuous gameplay videos (5 to 30 minutes of 60 FPS recording, totaling 18,000 to 108,000 frames), performance collapses catastrophically. As shown in Figure 8B, in temporal Needle-in-a-Haystack (NIAH) evaluations—where the model must identify the exact onset and termination of a transient 1-second animation glitch (e.g., a T-pose snap or z-fighting flicker) within continuous footage—**VLM localization accuracy collapsed to $1\%\text{ to }19\%$** (Zheng et al., 2026; Muller et al., 2026). Standard uniform frame subsampling (e.g., 1 FPS) frequently skips the transient glitch window entirely, while temporal self-attention across video frames suffers severe weight dilution over long sequences of nominal gameplay.
 
-### 3. Context Poisoning in Sequential Reference Pools
-In reference-guided frameworks, maintaining an uncorrupted reference buffer $\mathcal{R}_{\text{clean}}$ is vital. Yu et al. [6] discovered that if a subtle, unflagged visual glitch is mistakenly accepted into the reference pool (e.g., an asset that failed to stream its high-res texture and remained blurry), all subsequent test frames exhibiting the exact same missing texture are judged as "consistent with reference". This context poisoning triggers **false negative suppression rates exceeding $80\%$**, permanently blinding the QA system to persistent streaming bugs.
+### 3. Panel C: Context Poisoning in Sequential Reference Pools
+In reference-guided frameworks, maintaining an uncorrupted reference buffer $\mathcal{R}_{\text{clean}}$ is vital. Yu et al. (*RefGlitch-Bench*, 2026) discovered that if an undetected visual defect accidentally leaks into the clean reference pool (Figure 8C)—such as a prop that failed to stream its high-resolution texture or a character whose foot remains clipped into terrain—the reference baseline itself becomes compromised. When subsequent test frames exhibiting the identical persistent defect are evaluated against the poisoned reference $R_{\text{poisoned}}$, the calculated visual anomaly delta $\Delta(I_t, R_{\text{poisoned}}) \approx 0$ with high cosine similarity ($\ge 0.95$). This context poisoning triggers **false negative suppression rates exceeding $80\%$**, permanently masking persistent streaming and level-geometry bugs from the QA pipeline.
 
-### 4. Multimodal RAG Confirmation Bias via CLIP Image Embeddings
-To assist VLMs in evaluating game scenes, Lu et al. [17] integrated Retrieval-Augmented Generation (RAG) by retrieving top-$k$ visually similar frames using CLIP embeddings. Surprisingly, **image RAG degraded detection precision from $0.50$ to $0.37$**. CLIP embeddings are dominated by low-frequency global scene features (e.g., broad desert sand, foliage density, sky color) rather than localized defect tokens. Consequently, the retrieved reference frames reinforced confirmation bias regarding environmental scenery while distracting the model from inspecting local polygon vertices.
+### 4. Panel D: Multimodal RAG Confirmation Bias via CLIP Image Embeddings
+To assist VLMs in evaluating novel game environments without manual reference pairing, Lu et al. (2026) integrated Retrieval-Augmented Generation (RAG) by retrieving top-$k$ visually similar frames using standard CLIP embeddings. Surprisingly, **image RAG degraded detection precision from $0.50$ to $0.37$** (+26% false positive spike). As depicted in Figure 8D, global CLIP visual representations are overwhelmingly dominated by macro-scale environmental background semantics (e.g., broad desert sand dunes, sky lighting gradients, distant mountain foliage) rather than localized geometric defect tokens. Consequently, the retrieval pipeline fetches clean environmental frames captured from irrelevantly rotated viewpoints, misleading the downstream VLM into flagging viewpoint discrepancies as visual rendering defects.
