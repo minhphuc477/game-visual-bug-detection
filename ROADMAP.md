@@ -5,7 +5,7 @@ This research programme addresses automated visual regression testing, anomaly d
 
 ```mermaid
 flowchart TD
-    P1["<b>Paper 1: Systematic Mapping Study</b><br/>Foundational Review, Taxonomy & Gap Mapping<br/><i>(Target: JSS / EMSE / IEEE Trans. Games)</i>"]
+    P1["<b>Paper 1: Systematic Mapping Study</b><br/>Foundational Review, Taxonomy & Gap Mapping<br/><i>(Target: Visual Computing for Industry, Biomedicine, and Art [SpringerOpen] / Backup: Applied Computing & Informatics [Emerald])</i>"]
     P2["<b>Paper 2: Cross-Game Generalisation Benchmark</b><br/>Empirical Zero-Shot/Few-Shot Glitch Detection<br/><i>(Target: ICSE / FSE / AIIDE)</i>"]
     P3["<b>Paper 3: State-Aware Multimodal Glitch Detector</b><br/>Hybrid Vision + Engine State Representation<br/><i>(Target: CVPR / ECCV / NeurIPS D&B Track)</i>"]
     P4["<b>Paper 4: Temporal VLM Game Agent QA</b><br/>Long-Horizon Video Anomaly & Bug Localization<br/><i>(Target: IEEE Trans. Games / ACL / NeurIPS)</i>"]
@@ -21,7 +21,7 @@ flowchart TD
 
 ### Stage 1: Foundational Review & Mapping (Paper 1)
 - **Title:** *Computer Vision-Based Visual Testing in Video Games: A Systematic Mapping Study of Detection Techniques, Datasets, and Evaluation Methods*
-- **Role in PhD:** Establish the scientific baseline, taxonomy, dataset availability, and methodological gaps across SE, AI, and Computer Graphics literature (2020–2026).
+- **Target Venues:** Primary: *Visual Computing for Industry, Biomedicine, and Art* (SpringerOpen, Scopus Q1, $0 APC); Backup: *Applied Computing and Informatics* (Emerald, Scopus Q1, $0 APC)
 - **Core Contribution:**
   1. Multi-tier taxonomy of visual bugs in games (geometry, textures, UI/HUD, lighting/rendering, temporal/animation).
   2. Critical benchmark & dataset audit (public availability, game diversity, annotation quality).

@@ -1,6 +1,8 @@
 # Systematic Mapping Study Protocol
 
 **Study Title:** Computer Vision-Based Visual Testing in Video Games: A Systematic Mapping Study of Detection Techniques, Datasets, and Evaluation Methods  
+**Primary Target Venue:** *Visual Computing for Industry, Biomedicine, and Art* (SpringerOpen / China Graphics Society - $0 APC Diamond OA)  
+**Backup Target Venue:** *Applied Computing and Informatics* (Emerald Publishing - $0 APC Diamond OA)  
 **Methodological Framework:** Petersen et al. (2015) & Kitchenham and Charters (2007)  
 **Reporting Guideline:** PRISMA 2020 (Preferred Reporting Items for Systematic Reviews and Meta-Analyses)  
 **Principal Investigator:** Le Tran Minh Phuc  
