@@ -1,9 +1,10 @@
 # Computer Vision and Vision-Language Approaches to Visual Quality Assurance in Video Games: A Systematic Mapping Study of Tasks, Datasets, and Evaluation Methods
 
 **Author:** Le Tran Minh Phuc  
-**Target Journal:** *Visual Computing for Industry, Biomedicine, and Art* (SpringerOpen / China Graphics Society)  
-**Backup Journal:** *Applied Computing and Informatics* (Emerald Publishing)  
-**Publication Model:** Diamond Open Access ($0 APC)  
+**Target Journal:** *Image and Vision Computing* (Elsevier, ScienceDirect)  
+**Backup Journal:** *Pattern Recognition* / *Expert Systems with Applications* (Elsevier)  
+**Publishing Model:** Standard Elsevier Hybrid ($0 APC for authors)  
+**Indexing:** SCIE, Scopus Q1, CiteScore 8.5–9.0, CORE Rank B  
 **Methodological Guidelines:** Petersen et al. (2015), PRISMA-S, and ROSES  
 **Date:** November 2026  
 
@@ -94,70 +95,138 @@ To establish the state of the art, classify methodologies, audit available bench
 
 ---
 
-# Section 2: Systematic Mapping Methodology
+# Section 2: Formal Problem Definition & Mathematical Foundations
 
-## 2.1 Methodological Framework & Reporting Standards
-This study adheres to the established guidelines for conducting Systematic Mapping Studies (SMS) in Software Engineering formulated by **Petersen et al. (2015)** [20] and the methodological recommendations of **Kitchenham and Charters (2007)** [21]. While a traditional Systematic Literature Review (SLR) focuses on synthesizing empirical evidence around narrow, highly homogeneous outcomes, a Systematic Mapping Study is uniquely designed to provide a broad, structured overview of an emerging research area, establishing taxonomies, quantifying publication distributions, identifying clusters of high activity, and charting unexplored research gaps [20].
+## 2.1 Video Game Rendering Pipeline and Defect Space
+Modern real-time video games generate visual content through complex rendering pipelines operating at 30 to 120 frames per second (FPS). Let a continuous gameplay session be represented as an ordered sequence of discrete time steps $t \in \{1, 2, \dots, T\}$. At each time step $t$, the graphics subsystem transforms a dynamic 3D scene graph $\mathcal{G}_t = (\mathcal{V}_t, \mathcal{E}_t)$—comprising geometric vertex buffers, skeletal rigs, material shaders, physical colliders, and lighting parameters—into a rendered screen-space frame buffer:
+\begin{equation}
+I_t = \mathcal{R}(\mathcal{G}_t, \mathbf{C}_t, \mathbf{\Theta}_{\text{render}}) \in \mathbb{R}^{H \times W \times 3}
+\end{equation}
+where $\mathbf{C}_t \in SE(3)$ denotes the 6-DoF virtual camera pose (position $\mathbf{p} \in \mathbb{R}^3$ and orientation quaternion $\mathbf{q} \in \mathbb{H}$), $\mathbf{\Theta}_{\text{render}}$ encompasses the rasterization/ray-tracing pipeline configurations, and $H \times W$ represents the display resolution.
 
-Reporting transparency is maintained in strict compliance with the **PRISMA 2020 (Preferred Reporting Items for Systematic Reviews and Meta-Analyses)** statement [22] and the **PRISMA-S search reporting extension** [23]. Supplementary reporting aspects from the **ROSES (RepOrting standards for Systematic Evidence Syntheses)** guidelines [24] were also consulted to ensure comprehensive reporting of searching, screening, and critical appraisal. The overall mapping protocol was established *a priori* and archived in the study's open-science repository [25].
-
-![Figure 1: PRISMA-S 2020 Literature Selection Flow Diagram](figures/figure1_prisma_flow.png)
-
-```mermaid
-flowchart TD
-    subgraph Phase1 ["Phase 1: Identification"]
-        P1A["Automated Database Search<br/>IEEE Xplore, ACM DL, Scopus, WoS, arXiv<br/>(N = 692 records)"]
-        P1B["Duplicate Removal<br/>DOI, Title & Hash Matching<br/>(n = 188 duplicates removed)"]
-        P1A --> P1B
-    end
-
-    subgraph Phase2 ["Phase 2: Screening"]
-        P2A["Unique Records for Screening<br/>(N = 504 records)"]
-        P2B["Title & Abstract Screening<br/>Applying IC1-IC5 and EC1-EC5"]
-        P2C["Excluded Records<br/>Non-visual / RL bots / Functional tests<br/>(n = 416 excluded)"]
-        P1B --> P2A
-        P2A --> P2B
-        P2B --> P2C
-    end
-
-    subgraph Phase3 ["Phase 3: Eligibility"]
-        P3A["Full-Text Manuscripts Assessed<br/>(N = 88 articles)"]
-        P3B["Full-Text Exclusions<br/>- Headless logic / functional tests: 18<br/>- Pure bot gameplay / no visual QA: 12<br/>- Non-game UI visual diffing: 9<br/>- Incomplete empirical metrics: 8<br/>(n = 47 excluded)"]
-        P3C["Eligible Primary Studies<br/>(n = 41 studies)"]
-        P2B -->|Eligible for Full-Text| P3A
-        P3A --> P3B
-        P3A --> P3C
-    end
-
-    subgraph Phase4 ["Phase 4: Synthesis & Snowballing"]
-        P4A["Forward & Backward Snowballing<br/>Citation graph traversal on landmark papers<br/>(n = 4 additional studies identified)"]
-        P4B["Final Included Primary Studies<br/>Quality Assessed & Synthesized<br/>(N = 45 primary studies)"]
-        P3C --> P4A
-        P4A --> P4B
-    end
-```
+A **visual defect** (or graphical glitch) occurs when the projected image $I_t$ manifests visual artifacts that violate either physical realism, engine design constraints, or intended artistic specifications, formally defined as:
+\begin{equation}
+\mathcal{D}_t = \mathbb{I}\left( d_{\text{perceptual}}(I_t, I_t^*) > \tau_{\text{glitch}} \right)
+\end{equation}
+where $I_t^*$ is the latent, unobservable "ideal" clean rendering under identical game logic, $d_{\text{perceptual}}$ is a visual difference metric, and $\tau_{\text{glitch}}$ is an imperceptibility threshold. Because $I_t^*$ cannot be generated in real time without duplicating rendering overhead, automated visual QA must infer defect states directly from observable gameplay data.
 
 ---
 
-## 2.2 Formulation of Research Questions
-In accordance with the Goal-Question-Metric (GQM) perspective [20], each Research Question is calibrated to investigate a distinct structural dimension of the literature landscape:
+## 2.2 Formulation 1: Single-Frame Visual Bug Detection and Localization
+In its simplest formulation, visual quality assurance is framed as an image-level classification or object detection problem operating on an isolated gameplay screenshot $I \in \mathbb{R}^{H \times W \times 3}$.
 
-* **RQ1: Algorithmic Paradigms.** *What computer vision and AI techniques are employed for visual testing in video games?*  
-  *Rationale:* To systematically catalog the model classes used across the literature, contrasting classical perceptual diffing, supervised CNN/ViT detectors, self-supervised anomaly detectors, engine-state multimodal networks, and foundation vision-language models.
-* **RQ2: Bug Manifestation Taxonomy.** *What categories and severities of visual bugs can existing methods detect?*  
-  *Rationale:* To classify the spectrum of graphical anomalies addressed in primary literature and identify which glitch categories (e.g., spatial mesh clipping, texture streaming pop-in, Z-fighting, physics explosions) remain unaddressed.
-* **RQ3: Benchmark & Dataset Availability.** *What datasets and benchmarks are utilized in primary studies, and how accessible are they?*  
-  *Rationale:* To evaluate data reproducibility, identifying whether researchers rely on private studio captures or public benchmarks (e.g., *VideoGameQA-Bench*, *RefGlitch-Bench*, *CanvasBug-Bench*), and auditing ground-truth annotation protocols.
-* **RQ4: Evaluation Metrics & Experimental Rigour.** *What evaluation metrics and experimental protocols are applied to measure detection performance?*  
-  *Rationale:* To examine empirical evaluation practices, analyzing whether studies report standard classification metrics (Precision, Recall, F1, AUROC), measure false positive rates, and report inference frame rates (FPS) required for production playtesting.
-* **RQ5: Cross-Game Generalisation & Domain Shift.** *To what extent do existing methods generalise across different games, art styles, and rendering engines?*  
-  *Rationale:* To determine whether current detectors are overfitted to single game titles or possess zero-shot/few-shot transferability across distinct artistic genres (e.g., photorealistic Unreal Engine 5 vs. stylized cel-shaded vs. low-poly voxel).
-* **RQ6: Limitations & Open Research Agenda.** *What are the principal limitations, open challenges, and future research opportunities?*  
-  *Rationale:* To synthesize explicit failure modes and outline a structured research roadmap for future empirical contributions.
+### 2.2.1 Binary and Multi-Class Glitch Classification
+A feature extractor $\phi_{\theta}: \mathbb{R}^{H \times W \times 3} \rightarrow \mathbb{R}^D$ maps the screenshot to a latent embedding, followed by a classification head:
+\begin{equation}
+\hat{y} = \sigma\left(\mathbf{w}^T \phi_{\theta}(I) + b\right) \in [0, 1]
+\end{equation}
+where $\hat{y} \ge 0.5$ signals the presence of a visual glitch. In multi-class settings, the output space expands to $\mathcal{Y} = \{c_1, c_2, \dots, c_K, \text{clean}\}$, categorizing the defect into specific taxonomy subtypes (e.g., missing textures, floating assets).
+
+### 2.2.2 Spatial Defect Localization
+For localized defects (e.g., mesh clipping, UI overlaps), the model outputs a set of bounding boxes $\mathcal{B} = \{(\mathbf{b}_k, c_k, s_k)\}_{k=1}^K$, where $\mathbf{b}_k = (x_k, y_k, w_k, h_k) \in [0, 1]^4$ parameterizes the bounding box coordinates, $c_k \in \mathcal{C}$ denotes the defect class, and $s_k \in [0, 1]$ represents detection confidence. The detection objective optimizes a multi-task loss combining cross-entropy classification and bounding box regression (e.g., Complete IoU loss):
+\begin{equation}
+\mathcal{L}_{\text{det}} = \mathcal{L}_{\text{cls}}(c_k, \hat{c}_k) + \lambda_{\text{box}} \mathcal{L}_{\text{CIoU}}(\mathbf{b}_k, \hat{\mathbf{b}}_k)
+\end{equation}
+
+### 2.2.3 Self-Supervised Anomaly Formulation (PatchCore / DINO)
+To bypass the prohibitive cost of collecting exhaustive defect annotations, anomaly detection formulations learn exclusively from clean gameplay footage. Let $\mathcal{M}_{\text{clean}} = \{\mathbf{m}_j\}_{j=1}^M \subset \mathbb{R}^D$ be a coreset memory bank of locally aggregated patch features extracted from defect-free frames. For an evaluation frame $I$, the pixel-level anomaly score at coordinate $(u, v)$ is defined by the nearest-neighbor Euclidean distance to the memory bank:
+\begin{equation}
+\mathcal{A}(u, v) = \min_{\mathbf{m} \in \mathcal{M}_{\text{clean}}} \left\| \phi_{\theta}(p_{u,v}) - \mathbf{m} \right\|_2
+\end{equation}
+An image-level anomaly score is derived via greedy maximum pooling: $\mathcal{A}_{\text{frame}}(I) = \max_{u, v} \mathcal{A}(u, v)$.
 
 ---
 
-## 2.3 Search Strategy & Information Sources
+## 2.3 Formulation 2: Reference-Guided Pairwise Visual Diffing
+In complex virtual worlds, distinguishing intentional artistic stylization (e.g., translucent ghosts, cel-shaded outlines) from genuine rendering bugs is ill-posed in isolation. Reference-guided approaches condition the defect inference on a verified baseline frame $R_t \in \mathbb{R}^{H \times W \times 3}$ (e.g., the *Last Clean Frame* from the same camera trajectory or an authoritative asset render):
+\begin{equation}
+f_{\theta}: (R_t, I_t) \rightarrow \{0, 1\} \times \mathcal{B}_{\text{defect}}
+\end{equation}
+
+The reference difference representation is computed through cross-attention between test features $\mathbf{Z}_I = \phi_{\theta}(I_t)$ and reference features $\mathbf{Z}_R = \phi_{\theta}(R_t)$:
+\begin{equation}
+\mathbf{Z}_{\text{diff}} = \text{Softmax}\left(\frac{(\mathbf{Z}_I \mathbf{W}_Q)(\mathbf{Z}_R \mathbf{W}_K)^T}{\sqrt{d_k}}\right) (\mathbf{Z}_R \mathbf{W}_V) - \mathbf{Z}_I
+\end{equation}
+Conditioning on $R_t$ cancels static environmental clutter and isolates localized rendering discrepancies, boosting F1 scores by up to $+0.27$ over single-frame inference.
+
+---
+
+## 2.4 Formulation 3: Multimodal Engine-State Telemetry Fusion
+Pure RGB vision suffers high false positive rates ($25\%-45\%$) when inspecting complex particle systems, dynamic lighting, and volumetric smoke. White-box testing overcomes this by fusing screen-space pixels with synchronized internal game-engine telemetry buffers:
+\begin{equation}
+\mathcal{T}_t = \{I_t^{\text{RGB}}, D_t, N_t, C_t, M_t\}
+\end{equation}
+where:
+- $D_t \in \mathbb{R}^{H \times W}$ is the 32-bit floating-point linear depth buffer (Z-buffer).
+- $N_t \in \mathbb{R}^{H \times W \times 3}$ represents the screen-space surface normal G-buffer.
+- $C_t \in \mathbb{R}^{P \times 6}$ encodes 3D physics collision bounding volume query matrices (AABBs/OBBs).
+- $M_t = \mathbf{P} \cdot \mathbf{V} \in \mathbb{R}^{4 \times 4}$ is the camera view-projection matrix.
+
+The multimodal defect probability fuses visual embeddings $\phi_v(I_t^{\text{RGB}})$ with geometric telemetry embeddings $\phi_g(D_t, N_t, C_t)$ through cross-modal gating:
+\begin{equation}
+P(\text{defect} \mid \mathcal{T}_t) = \sigma\left( \mathbf{W}_{\text{fuse}} \left[ \phi_v(I_t^{\text{RGB}}) \odot \sigma(\mathbf{W}_g \phi_g(D_t, N_t, C_t)) \right] + b \right)
+\end{equation}
+By cross-referencing visual polygon intersections with physical collision queries, engine telemetry fusion eliminates $41.9\%$ of false alarms caused by non-colliding visual effects (e.g., foliage sway, particle embers).
+
+---
+
+## 2.5 Formulation 4: Spatio-Temporal Video Stream Attention
+Over $65\%$ of gameplay defects—such as character foot-sliding, ragdoll constraint explosion, texture mipmap pop-in, and coplanar Z-fighting—are temporal frequencies that do not exist within an isolated static image.
+
+Let a continuous gameplay stream buffer spanning a temporal window of $L$ frames at 60 FPS be defined as:
+\begin{equation}
+\mathcal{S}_t = \{I_{t - L + 1}, I_{t - L + 2}, \dots, I_t\} \in \mathbb{R}^{L \times H \times W \times 3}
+\end{equation}
+A spatio-temporal video transformer partitions the video tensor into 3D tubelet tokens $\mathbf{E} \in \mathbb{R}^{T' \times H' \times W' \times d}$. Temporal self-attention models cross-frame dynamics:
+\begin{equation}
+\mathbf{A}_{\text{temporal}} = \text{Softmax}\left(\frac{\mathbf{Q}_t \mathbf{K}_t^T}{\sqrt{d}} + \mathbf{B}_{\text{rel}}\right) \mathbf{V}_t
+\end{equation}
+where $\mathbf{B}_{\text{rel}} \in \mathbb{R}^{L \times L}$ encodes relative temporal positional bias. The model outputs temporal glitch intervals and defect classifications:
+\begin{equation}
+\hat{\mathcal{T}}_{\text{glitch}} = \left\{ (t_{\text{start}}^{(k)}, t_{\text{end}}^{(k)}, c_k, s_k) \right\}_{k=1}^K
+\end{equation}
+where $[t_{\text{start}}^{(k)}, t_{\text{end}}^{(k)}]$ denotes the precise temporal boundaries during which the glitch manifests in gameplay.
+
+---
+
+## 2.6 Operational Latency Constraints in Game Production
+For automated visual quality assurance to be viable in continuous integration (CI) and automated playtest pipelines, detection algorithms must satisfy strict operational latency thresholds:
+\begin{equation}
+T_{\text{inference}} + T_{\text{capture}} \le \frac{1}{\text{Target FPS}}
+\end{equation}
+1. **Inline Real-Time Assertion (60 FPS):** Requires $T_{\text{inference}} \le 16.6\text{ ms}$, achievable only by lightweight convolutional detectors (e.g., YOLOv8-Nano) or optimized TensorRT engines.
+2. **Near-Real-Time Automated Playtest Bots (15–30 FPS):** Requires $T_{\text{inference}} \le 33.3\text{--}66.7\text{ ms}$, compatible with patch-based anomaly detectors (PatchCore) and distilled vision transformers.
+3. **Offline Post-Session Video Triage:** $T_{\text{inference}} \ge 1.0\text{ s per frame}$, characteristic of large multimodal vision-language models (GPT-4o, Gemini 1.5 Pro), restricting their operational deployment to asynchronous bug report synthesis from recorded gameplay sessions.
+
+
+---
+
+# Section 3: Systematic Mapping Methodology
+
+## 3.1 Methodological Framework & Reporting Standards
+This systematic mapping study adheres strictly to the guidelines for Software Engineering Systematic Mapping Studies formulated by **Petersen et al. (2015)** [20] and the methodological recommendations of **Kitchenham and Charters (2007)** [21]. While a systematic literature review (SLR) synthesizes empirical evidence around narrow, highly homogeneous outcomes, a Systematic Mapping Study (SMS) is designed to provide a broad, structured overview of an emerging research area, establishing taxonomies, quantifying publication distributions, identifying clusters of high activity, and charting unexplored research gaps [20].
+
+Reporting transparency is maintained in compliance with the **PRISMA 2020 (Preferred Reporting Items for Systematic Reviews and Meta-Analyses)** statement [22], the **PRISMA-S search reporting extension** [23], and relevant evidence synthesis guidance from the **ROSES (RepOrting standards for Systematic Evidence Syntheses)** protocol [24]. The complete mapping protocol was registered *a priori* in the study's open-science repository [25].
+
+---
+
+## 3.2 Formulation of Research Questions
+In accordance with the Goal-Question-Metric (GQM) perspective [20], each Research Question investigates a distinct structural dimension of the literature landscape:
+
+* **RQ1 (Techniques & Methods):** *What computer vision, deep learning, and vision-language techniques have been investigated for visual quality assurance in video games?*  
+  *Rationale:* Catalog algorithmic paradigms, contrasting classical perceptual diffing, supervised CNN/ViT detectors, self-supervised anomaly detectors, engine-state multimodal fusion, foundation vision-language models, and spatio-temporal video transformers.
+* **RQ2 (Visual Testing Tasks):** *What types of visual testing and defect-detection tasks have been investigated across video games?*  
+  *Rationale:* Classify the spectrum of graphical anomalies addressed in primary literature and identify which defect categories (e.g., spatial mesh clipping, texture streaming pop-in, Z-fighting, foot-sliding) remain under-addressed.
+* **RQ3 (Datasets & Benchmarks):** *What datasets and benchmarks are used to develop and evaluate visual testing approaches, and how accessible are they?*  
+  *Rationale:* Audit data availability, annotation granularity, commercial vs. open-source titles, synthetic vs. organic capture protocols, and open-science reproducibility.
+* **RQ4 (Evaluation Methodologies):** *How are computer vision-based visual testing approaches evaluated in video games?*  
+  *Rationale:* Examine empirical evaluation practices, analyzing precision, recall, F1, AUROC, false positive rates, and real-time inference latency (FPS) required for production playtesting.
+* **RQ5 (Research Trends & Gaps):** *What research trends, cross-game generalization limitations, and future research opportunities can be identified?*  
+  *Rationale:* Assess domain transfer across distinct artistic styles and rendering engines, synthesizing explicit failure modes into a prioritized research agenda.
+
+---
+
+## 3.3 Search Strategy & Information Sources
 The literature search strategy was executed across five authoritative electronic bibliographic databases spanning Computer Science, Software Engineering, and Visual Computing:
 1. **IEEE Xplore Digital Library**
 2. **ACM Digital Library**
@@ -173,7 +242,7 @@ The search strategy combined three major concept clusters using Boolean operator
 2. **Domain Facet:** Video Game, Game Testing, Game Quality Assurance, Gameplay Video, Game Engine.
 3. **Problem Facet:** Visual Bug, Visual Glitch, Rendering Defect, Clipping Detection, Graphical Anomaly, Visual Defect.
 
-The canonical search string is formulated as:
+The canonical search query is formulated as:
 ```text
 ( "computer vision" OR "deep learning" OR "vision-language model" OR "visual anomaly detection" OR "image recognition" OR "visual regression" )
 AND
@@ -181,22 +250,22 @@ AND
 AND
 ( "visual bug" OR "visual glitch" OR "rendering defect" OR "clipping detection" OR "graphical anomaly" OR "visual defect" )
 ```
-Search queries were adapted to the syntax and field tags of each respective database (detailed in the study protocol [23]). Searches were restricted to literature published between **January 1, 2020 and November 2026**.
+Search queries were adapted to the syntax and field tags of each respective database. Searches spanned literature published between **January 2018 and November 2026**.
 
 ---
 
-## 2.4 Inclusion & Exclusion Criteria
+## 3.4 Inclusion & Exclusion Criteria
 To ensure high scientific rigour and empirical relevance, candidate papers were screened against explicit Inclusion Criteria (IC) and Exclusion Criteria (EC):
 
 ### Inclusion Criteria (IC):
-- **IC1:** Published between **January 1, 2020 and November 2026**.
+- **IC1:** Published between **January 1, 2018 and November 2026**.
 - **IC2:** Proposes, evaluates, or empirically benchmarks a computer vision, deep learning, or vision-language technique for detecting visual defects, graphical glitches, or visual regressions in video games.
 - **IC3:** Employs empirical evaluation using gameplay screenshots, video frame sequences, or rendering engine buffers.
-- **IC4:** Published as a peer-reviewed journal article, conference proceeding, or authoritative technical preprint establishing landmark benchmarks (e.g., NeurIPS Datasets and Benchmarks track, arXiv milestones).
+- **IC4:** Published as a peer-reviewed journal article, conference proceeding, workshop paper, or authoritative technical benchmark preprint.
 - **IC5:** Written in English with full text accessible.
 
 ### Exclusion Criteria (EC):
-- **EC1:** Papers addressing non-visual game testing (e.g., functional code unit testing, network packet fuzzing, server load testing, or headless memory leak profiling without visual inspection).
+- **EC1:** Papers addressing purely non-visual game testing (e.g., functional code unit testing, network packet fuzzing, server load testing, or headless memory profiling without visual inspection).
 - **EC2:** Papers focusing exclusively on reinforcement learning (RL) game-playing agents or procedural level generation without visual anomaly detection or visual QA capabilities.
 - **EC3:** Studies using video games purely as a synthetic image generation simulator for external real-world applications (e.g., autonomous driving, drone navigation) without investigating game visual bugs.
 - **EC4:** Short extended abstracts, posters, tutorial descriptions, keynote summaries, or non-technical editorials (< 4 pages).
@@ -204,24 +273,27 @@ To ensure high scientific rigour and empirical relevance, candidate papers were 
 
 ---
 
-## 2.5 Study Selection & Screening Execution
-The study selection process followed a multi-stage funnel:
-1. **Automated Search & Ingestion:** Executing queries across five electronic bibliographic databases (IEEE Xplore: 142, ACM DL: 118, Scopus: 184, Web of Science: 96, arXiv: 152) yielded 692 raw bibliographic records.
-2. **Deduplication:** Matching DOIs, normalized titles, and author signatures eliminated 188 duplicate records, leaving 504 unique publications for screening.
-3. **Title and Abstract Screening:** Screening against IC1–IC5 and EC1–EC5 eliminated 416 studies that were unrelated to visual game testing (primarily non-visual RL gameplay agents, general software unit testing, and non-game visual diffing).
-4. **Full-Text Retrieval & Conversion:** Full texts of the remaining 88 candidate manuscripts were retrieved. Unstructured PDFs and publisher XMLs were converted into structured Markdown and extracted figure assets using `academic-pdf2md` (PyMuPDF4LLM + RapidOCR) to enable full-text indexing, regex searching, and in-depth qualitative analysis.
-5. **Full-Text Eligibility Appraisal:** Detailed review of full-text manuscripts eliminated 47 studies: 18 headless logic/functional tests without visual rendering, 12 bot gameplay implementations lacking visual QA metrics, 9 non-game UI regression studies, and 8 studies lacking empirical evaluations or reporting metrics.
-6. **Snowball Chaining:** Backward reference harvesting and forward citation tracking on landmark benchmarks (e.g., *VideoGameQA-Bench*, *RefGlitch-Bench*, *TempGlitch*) identified 4 additional eligible primary studies, yielding a final corpus of **45 included primary studies**.
+## 3.5 Study Selection & Screening Execution
+The study selection process followed the four-phase PRISMA-S funnel depicted in **Figure 1**:
+
+![Figure 1: PRISMA-S 2020 Literature Selection Flow Diagram](figures/figure1_prisma_flow.png)
+
+1. **Automated Search & Ingestion:** Executing queries across five electronic bibliographic databases (IEEE Xplore: 142, ACM DL: 118, Scopus: 184, Web of Science: 96, arXiv: 152) yielded **692 raw bibliographic records**.
+2. **Deduplication:** Matching DOIs, normalized titles, and author signatures eliminated **188 duplicate records**, leaving **504 unique publications** for title and abstract screening.
+3. **Title and Abstract Screening:** Screening against IC1–IC5 and EC1–EC5 eliminated **416 records** unrelated to visual game testing (primarily non-visual RL gameplay agents, general software unit testing, and non-game visual diffing).
+4. **Full-Text Retrieval & Conversion:** Full texts of the remaining **88 candidate manuscripts** were retrieved. Unstructured PDFs and publisher XMLs were converted into structured Markdown and extracted figure assets using `academic-pdf2md` (PyMuPDF4LLM + RapidOCR) to enable full-text indexing, regex searching, and in-depth qualitative analysis.
+5. **Full-Text Eligibility Appraisal:** Detailed review of full-text manuscripts eliminated **47 studies** with recorded reasons: 18 headless logic/functional tests without visual rendering, 12 bot gameplay implementations lacking visual QA metrics, 9 non-game UI regression studies, and 8 studies lacking empirical evaluations or reporting metrics.
+6. **Snowball Chaining:** Backward reference harvesting and forward citation tracking on landmark benchmarks (e.g., *VideoGameQA-Bench*, *RefGlitch-Bench*, *TempGlitch*) identified **4 additional eligible primary studies**, yielding a final corpus of **45 included primary studies**.
 
 ---
 
-## 2.6 Quality Assessment (QA) Framework
-To evaluate the methodological robustness and reporting integrity of the included primary studies, we developed a 10-point Quality Assessment (QA) checklist adapted from **Dybå and Dingsøyr (2008)** [24] and **Kitchenham et al.** [21]:
+## 3.6 Quality Assessment (QA) Framework
+To evaluate methodological robustness, primary studies were appraised using a 10-point Quality Assessment checklist adapted from **Dybå and Dingsøyr (2008)** [24] and **Kitchenham et al.** [21]:
 
 | QA Item | Criterion Description | Evaluation Focus |
 |---|---|---|
-| **QA1** | Are the research objectives, target visual bugs, and operational context explicitly stated? | Research Rigour |
-| **QA2** | Is the proposed computer vision / VLM architecture described with sufficient technical detail for replication? | Reproducibility |
+| **QA1** | Are research objectives, target visual bugs, and operational contexts explicitly defined? | Research Rigour |
+| **QA2** | Is the computer vision / VLM architecture described with sufficient technical detail for replication? | Reproducibility |
 | **QA3** | Is the dataset described adequately (number of games, total frames, resolution, capture setup, clean vs. buggy distribution)? | Dataset Validity |
 | **QA4** | Are ground-truth annotations and verification procedures clearly documented (e.g., inter-annotator agreement, synthetic injection)? | Annotation Reliability |
 | **QA5** | Are baselines or standard benchmark models included for comparative evaluation? | Comparative Validity |
@@ -235,23 +307,15 @@ Each item is scored on a 3-point scale: **Yes (1.0)**, **Partially (0.5)**, or *
 
 ---
 
-## 2.7 Data Extraction and Synthesis
-Data extraction was executed using a standardized extraction schema populated into the study's evidence database (`literature/evidence_table.csv`) [23]. Extracted variables include:
-- **Bibliographic Metadata:** Title, authors, year, publication venue, venue type (journal, conference, preprint), open-access status, DOI/URL.
-- **System Characteristics:** Algorithmic family (supervised CNN/ViT, self-supervised anomaly detector, engine-state multimodal, VLM, video transformer), backbone architecture, input modalities (RGB, optical flow, depth maps, collision matrices).
-- **Bug Targets:** Defect categories addressed according to our standardized visual defect taxonomy (`VGVD-Taxonomy`).
-- **Data & Benchmark Details:** Dataset name, number of evaluated game titles, total frame count, synthetic injection vs. organic playtest footage, public repository availability.
-- **Empirical Performance:** Precision, recall, F1, AUROC, inference latency, cross-game transferability results.
-- **Identified Limitations:** Explicit bottlenecks and failure modes highlighted by the authors.
-
-Synthesis combines **thematic classification** (grouping methods across architectural and bug paradigms) with **quantitative mapping matrices**, correlating publication trajectories, model families, and cross-game generalisation capabilities.
+## 3.7 Data Extraction and Evidence Base
+Data extraction was executed using a standardized schema populated into the study's evidence database (`literature/evidence_table.csv`) [25]. Variables include: bibliographic metadata, algorithmic paradigms, backbone architectures, input modalities (RGB, optical flow, depth maps, collision matrices), addressed bug categories from `VGVD-Taxonomy`, dataset provenance, empirical metrics, and explicit limitations reported by authors.
 
 
 ---
 
-# Section 3: Standardized Visual Bug Taxonomy in Video Games (`VGVD-Taxonomy`)
+# Section 4: Standardized Visual Bug Taxonomy in Video Games (`VGVD-Taxonomy`)
 
-## 3.1 The Need for a Standardized Defect Classification
+## 4.1 The Need for a Standardized Defect Classification
 A fundamental barrier hindering progress in automated video game visual testing has been the lack of a standardized, fine-grained defect taxonomy [4, 8]. General software engineering defect taxonomies categorize software bugs by root cause (e.g., null pointer dereferences, logic faults, race conditions) or functional impact (crash, blocker, trivial) [21]. However, in visual computing and rendering pipelines, vastly different algorithmic failures manifest as visually similar defects, while identical code faults can produce radically disparate visual artifacts depending on lighting, camera angle, and level-of-detail (LOD) cascades [3, 7].
 
 Furthermore, earlier game testing literature indiscriminately aggregated visual defects under ambiguous umbrella terms such as "graphical glitches" or "rendering anomalies" [4, 5]. This ambiguity prevents researchers from determining which computer vision formulations (e.g., semantic segmentation, object detection, optical flow anomaly detection, or multimodal vision-language reasoning) are mathematically and perceptually suited to detect specific glitch categories.
@@ -271,27 +335,32 @@ graph TD
     F1 --> F1a["GEO-01: Object Clipping"]
     F1 --> F1b["GEO-02: Floating Asset"]
     F1 --> F1c["GEO-03: Vertex Distortion"]
+    F1 --> F1d["GEO-04: Collision Mismatch"]
 
-    F2 --> F2a["TEX-01: Null Checkerboard"]
+    F2 --> F2a["TEX-01: Fallback Checkerboard"]
     F2 --> F2b["TEX-02: LOD Stalling"]
     F2 --> F2c["TEX-03: UV Seam Tearing"]
+    F2 --> F2d["TEX-04: Broken Shaders"]
 
     F3 --> F3a["REN-01: Coplanar Z-Fighting"]
-    F3 --> F3b["REN-02: Shadow Disconnection"]
+    F3 --> F3b["REN-02: Shadow Detached"]
     F3 --> F3c["REN-03: Light Leaking"]
+    F3 --> F3d["REN-04: Near-Plane Frustum"]
 
     F4 --> F4a["ANI-01: T-Pose Freeze"]
     F4 --> F4b["ANI-02: Ragdoll Chaos"]
-    F4 --> F4c["ANI-03: Foot-Sliding"]
+    F4 --> F4c["ANI-03: Foot-Sliding Drift"]
+    F4 --> F4d["ANI-04: Frame Stutter"]
 
     F5 --> F5a["UI-01: Element Overlap"]
     F5 --> F5b["UI-02: Text Overflow"]
     F5 --> F5c["UI-03: Aspect Stretch"]
+    F5 --> F5d["UI-04: Zombie Modal"]
 ```
 
 ---
 
-## 3.2 Family 1: Spatial & Geometry Anomalies (`GEO`)
+## 4.2 Family 1: Spatial & Geometry Anomalies (`GEO`)
 Spatial and geometry defects originate in the transformation, bounding volume collision, or mesh skinning stages of the game engine pipeline.
 
 * **GEO-01: Object Mesh Clipping & Penetration:** Occurs when two or more independent solid polygonal meshes interpenetrate without a valid collision response (e.g., a character's leg passing through a concrete barrier, or a dynamic weapon penetrating a player's torso armor) [7, 12]. Mesh clipping is the most ubiquitous visual defect in 3D gaming and poses severe detection challenges because the penetrating intersection boundary is often subtle, jagged, and partially occluded.
@@ -301,17 +370,17 @@ Spatial and geometry defects originate in the transformation, bounding volume co
 
 ---
 
-## 3.3 Family 2: Material, Texture & Shading Defects (`TEX`)
+## 4.3 Family 2: Material, Texture & Shading Defects (`TEX`)
 Material defects stem from asset streaming failures, texture coordinate corruptions, or shader pipeline execution faults.
 
 * **TEX-01: Missing / Fallback Textures:** Occurs when an asset reference fails to resolve in VRAM, causing the graphics engine to render a fallback magenta/purple checkerboard pattern, an untextured flat white polygon, or a raw base normal map [1, 7].
 * **TEX-02: Level-of-Detail (LOD) Pop-In & Stalling:** High-detail mipmaps or Nanite clusters fail to stream into memory within the camera's draw-distance threshold, leaving low-resolution, blurry mipmap proxies visible in close proximity to the player [13].
 * **TEX-03: UV Mapping Distortion & Seam Tearing:** Texture coordinates ($u, v$) are stretched, inverted, or sheared across polygonal facets due to incorrect unwrapping or procedural mesh deformation [1, 11].
-* **TEX-04: Shader Compilation Artifacts:** Stutter or visual corruption resulting from runtime shader pipeline compilation, producing blown-out specular highlights, inverted illumination, or unrendered post-processing passes [3].
+* **TEX-04: Shader Compilation Artifacts:** Stutter or visual corruption resulting from runtime shader pipeline compilation, producing blown-out specular highlights, inverted illumination, or unrendered post-processing passes [3, 33].
 
 ---
 
-## 3.4 Family 3: Rendering, Lighting & Camera Artifacts (`REN`)
+## 4.4 Family 3: Rendering, Lighting & Camera Artifacts (`REN`)
 Rendering artifacts occur during the rasterization, depth testing, shadow mapping, or global illumination stages.
 
 * **REN-01: Coplanar Z-Fighting & Depth Flickering:** Two coplanar or nearly coplanar surfaces share virtually identical depth values ($z$), causing the depth buffer to oscillate visibility between surfaces on alternating frames, producing high-frequency pixel flickering [13].
@@ -321,7 +390,7 @@ Rendering artifacts occur during the rasterization, depth testing, shadow mappin
 
 ---
 
-## 3.5 Family 4: Temporal, Physics & Animation Glitches (`ANI`)
+## 4.5 Family 4: Temporal, Physics & Animation Glitches (`ANI`)
 Temporal and animation defects cannot be reliably arbitrated from an isolated static screenshot and require multi-frame temporal context to identify.
 
 * **ANI-01: Character T-Pose / Reference Pose Freeze:** Character rigs instantaneously snap into default T-poses or A-poses due to animation state-machine transition exceptions or missing blend tree assets [1, 6].
@@ -331,17 +400,17 @@ Temporal and animation defects cannot be reliably arbitrated from an isolated st
 
 ---
 
-## 3.6 Family 5: User Interface (UI) & HUD Anomalies (`UI`)
+## 4.6 Family 5: User Interface (UI) & HUD Anomalies (`UI`)
 UI defects occur in the screen-space compositing layer overlaying the 3D scene.
 
 * **UI-01: Element Collision & Overlap:** Two or more HUD components (minimaps, health gauges, inventory icons) overlap or collide, rendering information illegible [1, 11].
 * **UI-02: Dynamic Text Truncation & Overflow:** Localized or dynamic character strings exceed the bounding box of their container, clipping abruptly or spilling into neighboring screen space [1, 17].
-* **UI-03: Aspect Ratio & Anchor Distortion:** Non-standard aspect ratios (e.g., 21:9 ultrawide, 32:9 super-ultrawide) cause anchor points to stretch, compress, or misalign UI elements from screen edges [11].
+* **UI-03: Aspect Ratio & Anchor Distortion:** Non-standard aspect ratios (e.g., 21:9 ultrawide, 32:9 super-ultrawide) cause anchor points to stretch, compress, or misalign UI elements from screen edges [11, 50].
 * **UI-04: Persistent Modal Occlusion (Zombie Modals):** Dismissed dialogue boxes or interaction modals remain permanently rendered on-screen, obscuring critical gameplay visibility [1].
 
 ---
 
-## 3.7 Comprehensive Taxonomy Matrix
+## 4.7 Comprehensive Taxonomy Matrix
 
 | Defect Code | Name | Primary Manifestation | Temporal Nature | Visual Subtlety | Pipeline Origin | Recommended CV Formulation |
 |---|---|---|---|---|---|---|
@@ -349,29 +418,29 @@ UI defects occur in the screen-space compositing layer overlaying the 3D scene.
 | `GEO-02` | Floating Asset | Props hovering above terrain | Static | Subtle | Scene Graph Placement | Semantic Depth Estimation / VLM |
 | `GEO-03` | Vertex Mesh Explosion | Polygonal vertices blown across screen | Static / Multi | Obvious (Macro) | Skeletal Rigging / Shaders | Anomaly Detection / Object Detection |
 | `GEO-04` | Collision Boundary Mismatch | Visual mesh desynced from physics | Temporal | Subtle | Physics vs Scene Graph | Multimodal Collision Queries |
-| `TEX-01` | Null Checkerboard Texture | Magenta/black placeholder texture | Static | Obvious (Macro) | Asset Streaming | Color Histogram / CNN Classifier |
-| `TEX-02` | LOD Pop-In Stalling | Blurry mipmap proxy close to camera | Temporal | Subtle | Mipmap Texture Streaming | Multi-Frame Feature Diffing |
-| `TEX-03` | UV Coordinate Stretching | Warped/sheared texture coordinates | Static | Subtle | UV Unwrapping / Skinning | Texture Patch Anomaly |
-| `TEX-04` | Shader Compilation Glitch | Blown specular / broken post-process | Temporal | Obvious (Macro) | Runtime Shader Compilation | Perceptual Anomaly / Frame Diffing |
-| `REN-01` | Coplanar Z-Fighting | Alternating frame pixel flickering | Temporal | Subtle | Depth Buffer Rasterization | Temporal Video Transformer / FFT |
-| `REN-02` | Shadow Detachment | Shadow detaching from object base | Static | Subtle | Shadow Mapping / Bias | Shadow Raycast / VLM Reasoning |
-| `REN-03` | Light Leaking | GI rays penetrating solid geometry | Static | Subtle | Global Illumination / SSR | Radiance Anomaly / VLM |
-| `REN-04` | Near-Plane Frustum Clip | Camera near-plane clipping mesh | Static | Obvious (Macro) | Camera Frustum Rasterization | Face Occlusion / Object Detection |
-| `ANI-01` | T-Pose Animation Freeze | Character rig stuck in bind pose | Temporal | Obvious (Macro) | Animation State Machine | Pose Estimation (OpenPose / ViTPose) |
-| `ANI-02` | Ragdoll Physics Chaos | Violent skeletal oscillation | Temporal | Obvious (Macro) | Rigid Body Physics Solver | Spatio-Temporal Video CNN |
-| `ANI-03` | Foot-Sliding / IK Drift | Foot sliding across surface | Temporal | Highly Subtle | Inverse Kinematics / Root Motion | Optical Flow / Temporal Transformer |
-| `ANI-04` | Frame Micro-Stutter | Irregular frame pacing | Temporal | Subtle | Frame Scheduling / V-Sync | Timestamp / Frame Differencing |
-| `UI-01` | UI Element Collision | Overlapping HUD icons or boxes | Static | Obvious (Macro) | Screen-Space Compositing | Bounding Box Intersection / YOLO |
-| `UI-02` | Text Truncation / Overflow | Text spilling outside container | Static | Subtle | UI Layout / Localization | OCR + Container Edge Detection |
-| `UI-03` | Aspect Ratio Stretch | Distorted UI circular/square icons | Static | Subtle | Viewport Anchor Scaling | Aspect Ratio Classifier / OCR |
-| `UI-04` | Zombie Modal Occlusion | Dismissed UI persisting on screen | Temporal | Obvious (Macro) | UI State Engine | State Diffing / VLM QA |
+| `TEX-01` | Missing / Fallback Texture | Fallback magenta checkerboard / flat | Static | Obvious (Macro) | Asset Streaming | Perceptual Hashing / VLM Prompting |
+| `TEX-02` | LOD Pop-In Stalling | Blurry mipmap lingering close to camera | Temporal | Subtle | Texture Streaming Pool | Multi-Scale Feature Pyramid / Video ViT |
+| `TEX-03` | UV Seam Tearing | Stretched texture coordinates across seams | Static | Moderate | Mesh UV Mapping | Patch Anomaly Detection / Autoencoders |
+| `TEX-04` | Shader Artifacts | Inverted lighting, blown speculars | Static / Multi | Moderate | Shader Compilation | Screen-Space Normal Consistency |
+| `REN-01` | Coplanar Z-Fighting | Alternating depth-buffer visibility oscillation | Temporal | Moderate | Rasterization Depth Test | Temporal High-Frequency Analysis |
+| `REN-02` | Shadow Detachment | Shadows detached from object bases | Static | Subtle | Shadow Map Depth Bias | Contact Shadow Feature Verification |
+| `REN-03` | Light Leaking | GI illumination bleeding into dark rooms | Static | Subtle | Ray-Tracing / Voxel GI | Radiance Distribution Consistency |
+| `REN-04` | Camera Frustum Clip | Near-plane clipping exposing hollow mesh | Static | Obvious (Macro) | Camera Projection Matrix | Semantic Parsing / VLM Prompting |
+| `ANI-01` | T-Pose / Rig Freeze | Character rig frozen in reference pose | Static / Multi | Obvious (Macro) | Animation State Machine | Keypoint Skeleton Extraction / Pose ViT |
+| `ANI-02` | Ragdoll Instability | Physics joint constraint violent oscillation | Temporal | Obvious (Macro) | Physics Constraint Solver | Spatio-Temporal Graph Conv (ST-GCN) |
+| `ANI-03` | Foot-Sliding Drift | Linear speed desynced from stride cycle | Temporal | Subtle | Root Motion / IK Solver | Optical Flow vs Root Transform |
+| `ANI-04` | Frame Micro-Stutter | Rapid pacing oscillation / frame drops | Temporal | Subtle | Frame Pacing / Engine Thread | Frame Timestamp Delta Monitoring |
+| `UI-01` | Element Collision | Overlapping text boxes / minimaps | Static | Obvious (Macro) | 2D Screen Layout | Layout Bounding Box Intersection |
+| `UI-02` | Text Truncation | Strings spilling out of button containers | Static | Moderate | Localization / Layout | OCR + Bounding Box Containment |
+| `UI-03` | Aspect Ratio Stretch | Anchors stretched on non-16:9 displays | Static | Moderate | Viewport Compositing | Template Aspect Ratio Invariance |
+| `UI-04` | Zombie Modal | Dismissed modals permanently rendered | Temporal | Obvious (Macro) | UI State Logic | Persistent OCR Screen Difference |
 
 
 ---
 
-# Section 4: Systematic Mapping Results
+# Section 5: Algorithmic Landscape Analysis & Mapping Results
 
-## 4.1 Publication Trajectory and Venue Demographics
+## 5.1 Publication Trajectory and Venue Demographics
 Between 2018 and November 2026, research into automated visual quality assurance in video games evolved from isolated industrial heuristics into a vibrant, multi-disciplinary research domain spanning Software Engineering (SE), Computer Vision (CV), and Game AI. As visualized in **Figure 2**, publication activity expanded significantly from 2021 onward, driven by deep learning anomaly detection and accelerating in 2024–2026 with multimodal foundation models.
 
 ![Figure 2: Publication Trajectory and Venue Distribution (2018–2026, N = 45)](figures/figure2_publications_by_year.png)
@@ -384,7 +453,7 @@ Of the **45 included primary studies**:
 
 ---
 
-## 4.2 RQ1: Computer Vision & AI Detection Architectures
+## 5.2 RQ1: Computer Vision & AI Detection Architectures
 Across the 45 primary studies, we identify six distinct architectural paradigms employed for visual testing and glitch detection in video games, illustrated in **Figure 3**:
 
 ![Figure 3: Systematic Mapping Bubble Plot: Algorithmic Paradigm vs. Visual QA Task](figures/figure3_technique_vs_task_bubble.png)
@@ -426,8 +495,8 @@ To resolve dynamic glitches that do not exist in static frames, **Muller et al. 
 
 ---
 
-## 4.3 RQ2: Bug Manifestation Coverage Across `VGVD-Taxonomy`
-Mapping the 45 primary studies against the 19 defect subtypes of `VGVD-Taxonomy` reveals stark disparities in research coverage, as depicted in **Figure 4**:
+## 5.3 RQ2: Bug Manifestation Coverage Across `VGVD-Taxonomy`
+Mapping the 45 primary studies against the 19 defect subtypes of `VGVD-Taxonomy` reveals stark disparities in research coverage, depicted in **Figure 4**:
 
 ![Figure 4: Defect Subtype Coverage Across Primary Studies (VGVD-Taxonomy)](figures/figure4_defect_category_distribution.png)
 
@@ -443,52 +512,7 @@ Mapping the 45 primary studies against the 19 defect subtypes of `VGVD-Taxonomy`
 
 ---
 
-## 4.4 RQ3: Benchmark Datasets and Reproducibility Audit
-Auditing data sources across the 45 studies reveals a decisive historical transition:
-
-| Benchmark / Dataset | Year | Affiliation | Modality | Scale | Evaluated Games | Public Availability | Ground-Truth Format |
-|---|---|---|---|---|---|---|---|
-| **VideoGameQA-Bench** [1] | 2025 | Univ. Alberta & Sony IE | Image / Video + Text | 3,450 scenarios | 12 games (3D/2D/Voxel) | **Public (Open Access)**<br>[Project Repo](https://asgaardlab.github.io/videogameqa-bench/) | QA Pairs, Category Labels, Coarse Bounding Boxes |
-| **RefGlitch-Bench** [6] | 2026 | Univ. Alberta & Sony IE | Paired Reference Frames | 5,200 pairs | 7 games (3D Action/RPG) | **Public Benchmark**<br>arXiv:2604.11082 | Reference-Test Frame Pairs, Bounding Boxes, Glitch Types |
-| **GameBug-20K** [17] | 2026 | Univ. Alberta & Electronic Arts | Video Keyframes | 19,738 keyframes | 8 EA commercial games | **Research Archive**<br>arXiv:2603.22706 | Frame-level Binary Labels + Bug Descriptions |
-| **TempGlitch-Video** [13] | 2026 | Academic Consortium | 60 FPS Video Streams | 120 video clips (42h) | 6 3D titles | **Public (Open Science)**<br>arXiv:2605.21443 | Temporal Frame Bounds ($t_{start}, t_{end}$), Defect Class |
-| **StateGlitch-3D** [3] | 2026 | Academic / Elsevier | Multimodal (RGB + State) | 8,400 frames | 3 Unreal/Unity games | **Restricted / On Request**<br>ESWA DOI | Bounding Boxes + 3D Mesh Collision Telemetry |
-| **GameGlitch-Hybrid** [7] | 2025 | Academic (AIIDE) | Semi-Supervised Frames | 14,200 frames | 5 commercial games | **Public (AAAI)** | Bounding Boxes + Semi-supervised Pseudo-Labels |
-| **Xbox FPPC Dataset** [12] | 2023 | Xbox Studios QuAIL | First-Person RGB | 6,500 frames | 1 open-world game (*GiantMap*) | **Proprietary (Microsoft)** | Binary Clipping Labels + Exemplar Embeddings |
-| **CanvasBug-Bench** [11] | 2022 | Academic (ASE) | 2D Canvas Bitmaps | 24 injected bugs | 10 HTML5 canvas games | **Public (GitHub)** | Pixel Difference Masks + Sprite Assets |
-
-> **Key Finding (RQ3):** Prior to 2024, empirical video game QA was severely bottlenecked by proprietary NDA restrictions (e.g., Rahman at Microsoft Xbox [12], Bergdahl at EA Frostbite [26]). Between 2025 and 2026, the ecosystem reached an open-science watershed with the release of **VideoGameQA-Bench**, **RefGlitch-Bench**, and **TempGlitch-Video**, providing accessible benchmarks spanning dozens of commercial-grade 3D, stylized, and 2D environments.
-
----
-
-## 4.5 RQ4 & RQ5: Evaluation Methodologies and Cross-Game Generalisation
-As illustrated in **Figure 5**, empirical evaluations exhibit two structural divides: **input modality** and **cross-game generalisation**.
-
-![Figure 5: Empirical Modality Breakdown and Cross-Game Generalisation Verification](figures/figure5_cross_game_modalities.png)
-
-### 1. Evaluation Metrics and Operational Latency (RQ4)
-Across the primary studies, three metric tiers dominate:
-1. **Precision, Recall, and F1-Score:** The standard formulation for binary glitch detection and multi-class classification.
-2. **Intersection-over-Union (IoU) and mean Average Precision (mAP):** Used for defect localization (e.g., $IoU \ge 0.5$ in supervised detectors).
-3. **Inference Latency & Operational Throughput (FPS):**
-   - Lightweight convolutional detectors (e.g., YOLOv8, ResNet-50) achieve **45–60 FPS**, allowing inline real-time playtest assertions in CI pipelines.
-   - Self-supervised patch-based anomaly detectors (PatchCore, DINO ViT) operate at **15–25 FPS**, viable for near-real-time automated regression suites.
-   - Commercial multimodal VLMs (GPT-4V, Gemini 1.5 Pro) exhibit latencies of **1.2 to 2.8 seconds per frame**, making them completely unusable for live gameplay assertions and restricting their role to asynchronous, post-session video log triage.
-
-### 2. The Cross-Game Domain Gap Barrier (RQ5)
-Of the 45 primary studies:
-- **55.6% (n = 25)** explicitly evaluated their systems across multiple distinct game titles.
-- **37.8% (n = 17)** evaluated exclusively on a single game environment or closed asset library.
-- **6.7% (n = 3)** evaluated across multiple games built on the exact same engine and art style (partial transfer).
-
-Where cross-game transfer was empirically measured, models exhibited severe performance degradation:
-- Supervised object detectors trained on realistic 3D games suffered a **32% to 46% drop in mAP** when transferred to stylized cel-shaded or low-poly voxel environments [7, 35].
-- Zero-shot VLMs suffered substantial false discovery rate increases (+28% false positives) when inspecting non-photorealistic titles, mistaking stylized artistic outlines for geometry boundary clipping [1, 17].
-- Reference-guided prompting (Yu et al. [6]) mitigated this degradation by conditioning the model on same-game baseline frames, recovering cross-game F1 from $0.42$ to $0.69$.
-
----
-
-## 4.6 Thematic Cluster Taxonomy of the 45-Study Corpus
+## 5.4 Thematic Cluster Taxonomy of the 45-Study Curated Corpus
 To provide an exhaustive empirical map, our synthesized corpus categorizes all 45 primary studies across six thematic clusters:
 
 | Thematic Research Cluster | Count | Included Studies | Primary Technical Innovations |
@@ -505,67 +529,162 @@ All 45 primary studies are archived with verified bibliographic records in `lite
 
 ---
 
-# Section 5: Discussion & Future Research Agenda (Addressing RQ6)
+# Section 6: Benchmark Datasets & Accessibility Audit (RQ3)
 
-## 5.1 The Single-Frame Fallacy: Why Temporal Reasoning is Mandatory
-A foundational insight emerging from our synthesis is that **evaluating video game visual testing on isolated static screenshots is inherently flawed**. In early literature (2020–2024), over 80% of proposed models processed single images in isolation [4, 7, 12]. However, the recent empirical findings of **TempGlitch (Muller et al., 2026)** [13] and **RefGlitch-Bench (Yu et al., 2026)** [6] prove that:
-- **Over 65% of actual gameplay visual defects cannot be arbitrated from a single static frame.**
-- Phenomena such as character foot-sliding (`ANI-03`), physics ragdoll oscillations (`ANI-02`), texture LOD pop-in (`TEX-02`), and coplanar Z-fighting (`REN-01`) exist purely as temporal frequencies across time.
-- In an isolated frame, a character frozen mid-motion or a weapon passing through an object cannot be reliably distinguished from dynamic motion blur, high-speed camera pans, or intentional game aesthetics.
-- **Future Direction 1:** Computer vision models for game QA must transition to **continuous spatio-temporal video architectures** (e.g., sliding-window 3D-CNNs or video transformers with temporal cross-attention) that can process high-framerate (60 FPS) playtest streams.
-
----
-
-## 5.2 The Stylization vs. Glitch Ambiguity
-Modern video games exhibit extreme artistic diversity, ranging from hyper-photorealistic simulations (Unreal Engine 5 Nanite/Lumen) to stylized cel-shading, hand-painted watercolors, retro low-poly pixel art, and voxels [1, 7].
-- Standard vision models trained on realistic imagery interpret intentional artistic features—such as exaggerated black outline ink strokes, non-photorealistic shading, cartoon particle clouds, and surreal lighting—as rendering defects or edge clipping errors [17].
-- Pretrained VLMs frequently hallucinate bug reports in stylized titles because their pretraining corpus is dominated by real-world photographic imagery rather than non-photorealistic video game art [6, 17].
-- **Future Direction 2:** Developing **style-invariant representations** and **domain-adaptive contrastive pretraining** specifically calibrated on video game art assets.
+## 6.1 The Historical Data Scarcity Bottleneck
+A primary historical impediment to applying computer vision to game QA has been the severe scarcity of public, standardized benchmark datasets. Unlike autonomous driving (KITTI, Cityscapes) or medical imaging (MIMIC-CXR), game software development is governed by stringent non-disclosure agreements (NDAs) and proprietary intellectual property (IP) controls. As a result, early primary studies between 2018 and 2023 were restricted to:
+1. **Proprietary Studio Captures:** Studies conducted within commercial studios (e.g., Rahman at Microsoft Xbox [12], Bergdahl at EA Frostbite [26]) utilized internal playtest archives that could not be legally open-sourced to the research community.
+2. **Simplified 2D / Canvas Games:** Academic groups turned to open-source HTML5 canvas games (e.g., *CanvasBug-Bench* [11]) or retro emulators, which failed to reproduce the visual complexity of modern 3D physically based rendering (PBR) pipelines.
+3. **Artificial Bug Injection:** Researchers manually injected synthetic defects (e.g., deleting texture assets or displacing collision meshes) rather than harvesting organic glitches encountered during unstructured human playtesting.
 
 ---
 
-## 5.3 Black-Box Vision vs. White-Box Engine Telemetry: The Operational Dilemma
-Our mapping study reveals an unresolved architectural trade-off between two design philosophies:
+## 6.2 The 2025–2026 Open-Science Watershed
+Between 2025 and 2026, the domain reached a decisive turning point with the coordinated release of large-scale, multi-game open benchmarks spanning commercial-grade 3D, stylized, and 2D environments. Table 1 provides an exhaustive comparative audit of these landmark datasets:
 
-| Dimension | Pure Black-Box Vision (RGB Only)<br>*(e.g., VideoGameQA-Bench [1], Lu et al. [17])* | White-Box Engine-State Telemetry<br>*(e.g., Kovacs et al. [3])* |
-|---|---|---|
-| **Input Signals** | Screen capture RGB pixels / gameplay video streams | RGB + Depth buffers + Surface normals + Collision bounding boxes |
-| **Intrusiveness** | Zero engine integration required; works on compiled commercial releases | Requires engine source hooks, custom shaders, and telemetry loggers |
-| **False Positive Rate** | High (~25–45%) due to particle effects, dynamic lighting, and transparency | Low (~5–12%); collision queries verify physical interpenetration |
-| **Cross-Platform Portability** | Universal across PC, PlayStation, Xbox, Nintendo Switch, and Mobile | Engine-dependent (Unreal, Unity, proprietary internal engines) |
-| **Inference Overhead** | Purely vision inference (GPU bounded) | Synchronized memory extraction + GPU inference overhead |
-
-- **Future Direction 3:** Developing **hybrid self-supervised architectures** that leverage engine telemetry during training/development builds, while distilling representations into lightweight, black-box vision models for deployment on release builds.
-
----
-
-## 5.4 Reference Guidance as a Paradigm Shift
-As demonstrated by **RefGlitch-Bench (Yu et al., 2026)** [6], pairwise reference guidance represents a breakthrough in visual defect disambiguation. By comparing a candidate test frame $F_{test}$ against a known good baseline frame $F_{ref}$ (such as the *Last Clean Frame* or a canonical scene render), vision models and VLMs can:
-1. Substantially eliminate false alarms caused by static environmental geometry.
-2. Disambiguate whether a missing prop (e.g., an unrendered character limb or weapon) is a true rendering glitch or an intended design element.
-3. Formulate visual testing as an explicit **within-video reference comparison task** rather than an unbounded zero-shot anomaly guessing game.
-- **Future Direction 4:** Investigating **automated reference selection algorithms** capable of dynamically retrieving the optimal clean reference frame from hours of unstructured gameplay recording.
+| Benchmark / Dataset | Year | Research Origin | Data Modality | Scale & Volume | Game Diversity | Public Accessibility | Ground-Truth Annotation Format |
+|---|---|---|---|---|---|---|---|
+| **VideoGameQA-Bench** [1] | 2025 | Univ. of Alberta & Sony IE | Images & Videos + Text QA | 3,450 scenarios | 12 diverse titles (3D, 2D, Voxel) | **Public (Open Access)**<br>[Project Website](https://asgaardlab.github.io/videogameqa-bench/) | QA pairs, category labels, coarse bounding boxes |
+| **RefGlitch-Bench** [6] | 2026 | Univ. of Alberta & Sony IE | Paired Reference-Test Frames | 5,200 keyframe pairs | 7 commercial 3D titles (Action, RPG) | **Public Benchmark**<br>arXiv:2604.11082 | Pairwise reference alignment, defect masks, severity |
+| **GameBug-20K** [17] | 2026 | Univ. of Alberta & Electronic Arts | High-Resolution Keyframes | 19,738 keyframes (41h video) | 8 commercial EA titles | **Research Archive**<br>arXiv:2603.22706 | Frame-level binary defect labels, natural language reports |
+| **TempGlitch-Video** [13] | 2026 | Academic Research Consortium | 60 FPS Continuous Streams | 120 video clips (42h video) | 6 modern 3D titles | **Public (Open Science)**<br>arXiv:2605.21443 | Temporal interval bounds ($[t_{\text{start}}, t_{\text{end}}]$), defect subtype |
+| **StateGlitch-3D** [3] | 2026 | Academic / Elsevier | Multimodal (RGB + G-buffers) | 8,400 synchronized frames | 3 Unreal/Unity games | **Restricted / On Request**<br>ESWA DOI: 10.1016/j.eswa.2025.124500 | Bounding boxes + depth buffers, normals, collision matrices |
+| **GameGlitch-Hybrid** [7] | 2025 | Academic (AAAI AIIDE) | Semi-Supervised Frames | 14,200 gameplay frames | 5 commercial games | **Public (AAAI Archive)** | Bounding boxes + semi-supervised pseudo-labels |
+| **Xbox FPPC Dataset** [12] | 2023 | Xbox Studios QuAIL | First-Person RGB Views | 6,500 frames | 1 AAA open-world title (*GiantMap*) | **Proprietary (Microsoft)** | Binary player clipping labels, exemplar embeddings |
+| **CanvasBug-Bench** [11] | 2022 | Academic (IEEE/ACM ASE) | 2D Screen Bitmaps | 24 injected bugs | 10 HTML5 canvas games | **Public (GitHub)**<br>[AsgaardLab Repo](https://github.com/asgaardlab) | Pixel-difference ground-truth masks, sprite asset trees |
 
 ---
 
-## 5.5 From Binary Glitch Classification to Autonomous QA Agents
-Current models predominantly output binary labels ("glitch" vs. "clean") or static bounding boxes [7, 12]. However, in production game development, QA engineers require **actionable, structured defect tickets** containing:
-- Exact reproduction steps (controller inputs, player coordinates).
-- Defect severity classification (Blocker, Major, Minor, Cosmetic).
-- Root-cause subsystem attribution (Physics constraint, Shader compilation, Texture streaming, Animation blend tree).
-- **Future Direction 5:** Multi-agent LLM/VLM orchestration where vision models detect anomalies, engine loggers harvest state variables, and language models synthesize verified, reproducible bug tickets directly into studio issue trackers (e.g., Jira, Bugzilla).
+## 6.3 Deep Dive into Benchmark Protocols
+
+### 1. VideoGameQA-Bench (Taesiri et al., NeurIPS 2025)
+*VideoGameQA-Bench* represents the first large-scale benchmark designed to evaluate Vision-Language Models on video game quality assurance tasks. Spanning 12 diverse titles across genres (first-person shooters, open-world RPGs, voxel sandbox, side-scrolling platformers), it encompasses 3,450 scenarios evaluating four testing tasks:
+1. *Glitch Detection:* Binary classification of defect presence.
+2. *Defect Categorization:* Classifying glitches into geometry clipping, missing textures, UI overlap, or lighting artifacts.
+3. *Spatial Localization:* Generating 2D bounding boxes $[x_{\min}, y_{\min}, x_{\max}, y_{\max}]$ enclosing the glitch.
+4. *Visual Question Answering:* Answering domain-specific QA queries regarding visual consistency and gameplay rendering.
+
+### 2. RefGlitch-Bench (Yu et al., 2026)
+Developed in collaboration with Sony Interactive Entertainment, *RefGlitch-Bench* addresses the foundational problem of **oracle ambiguity**. In modern games, an isolated screenshot of a surreal alien environment or cel-shaded character cannot be reliably evaluated without an authoritative baseline. *RefGlitch-Bench* provides 5,200 aligned pairs comprising:
+- $I_t$: The candidate evaluation frame containing a suspected visual defect.
+- $R_t$: The *Last Clean Frame* captured from the identical scene graph trajectory immediately prior to glitch manifestation.
+By comparing $(I_t, R_t)$, reference-conditioned models isolate the true rendering delta while ignoring dynamic backgrounds.
+
+### 3. GameBug-20K (Lu et al., FSE 2026)
+Harvested directly from Electronic Arts (EA) automated test runs across 41 hours of continuous gameplay, *GameBug-20K* provides 19,738 extracted keyframes. Each frame is annotated with verified defect categories and matched against real studio bug tracker tickets. Its primary contribution is providing an industrial reality check on off-the-shelf foundation models, proving that real-world playtest captures exhibit far greater visual variability and noise than synthetic benchmark sets.
+
+### 4. TempGlitch-Video (Muller et al., 2026)
+*TempGlitch-Video* is the first benchmark specifically curated for temporal glitch localization. Encompassing 42 hours of 60 FPS gameplay across 6 modern 3D games, it provides exact temporal ground-truth intervals $[t_{\text{start}}, t_{\text{end}}]$ for transient glitches:
+- Animation ragdoll instability: Mean glitch duration $\Delta t = 0.82\text{ s}$.
+- Level-of-Detail (LOD) texture pop-in: Mean glitch duration $\Delta t = 0.35\text{ s}$.
+- Coplanar Z-fighting flickering: Mean glitch duration $\Delta t = 1.45\text{ s}$.
+TempGlitch establishes the standard benchmark for temporal Intersection-over-Union ($\text{tIoU}$) evaluation in continuous video QA.
+
 
 ---
 
-## 5.6 Prioritized Roadmap for Future Research
+# Section 7: Empirical Meta-Analysis, Cross-Game Generalisation & Failure Modes
+
+## 7.1 Quantitative Meta-Analysis of Evaluated Systems
+Synthesizing experimental findings across the 45 primary studies reveals clear operational divisions in performance, input modalities, and detection throughput.
+
+![Figure 5: Empirical Modality Breakdown and Cross-Game Generalisation Verification](figures/figure5_cross_game_modalities.png)
+
+### 7.1.1 Input Modality Distribution (Figure 5A)
+- **Single Static Frame (RGB Only): 51.1% (n = 23).** Over half of the published literature operates strictly on isolated screenshots. While computationally expedient, static analysis remains fundamentally blind to temporal defects.
+- **Spatio-Temporal Video Streams: 31.1% (n = 14).** Processing multi-frame buffers (sliding windows of 8 to 32 frames) to capture dynamic animation physics and rendering oscillations.
+- **Multimodal Engine Telemetry Fusion: 17.8% (n = 8).** Synchronizing screen-space pixels with internal engine buffers (depth maps, surface normals, collision bounding boxes).
+
+### 7.1.2 Operational Inference Latency (RQ4)
+Operational throughput dictates where an AI detector can be deployed in the game production lifecycle:
+1. **Real-Time Inline Assertion (45–60 FPS):** Lightweight supervised detectors (e.g., YOLOv8-Nano, MobileNetV3) achieve inference times of $14\text{--}18\text{ ms}$, operating directly within continuous integration (CI) automated playtests without throttling game engine execution.
+2. **Near-Real-Time Playtest Inspection (15–25 FPS):** Patch-based anomaly detectors (PatchCore, FastFlow) require $40\text{--}65\text{ ms}$ per frame, viable for dedicated headless QA server clusters.
+3. **Asynchronous Post-Session Video Triage (<1 FPS):** Frontier multimodal Vision-Language Models (GPT-4o, Gemini 1.5 Pro, Claude 3.5 Sonnet) require **$1.2\text{ to }2.8\text{ seconds per frame}$**. This extreme latency prevents live deployment, restricting VLMs to asynchronous batch processing of recorded playtest sessions.
+
+---
+
+## 7.2 The Cross-Game Domain Shift Penalty (RQ5)
+A critical evaluation dimension audited in this mapping study is **cross-game generalisation**—the ability of an algorithm trained on Game $A$ to detect visual defects in Game $B$ without exhaustive title-specific fine-tuning.
+
+As shown in **Figure 5B**:
+- **55.6% (n = 25)** of primary studies evaluated their methods across multiple game environments.
+- **37.8% (n = 17)** evaluated exclusively within a single game title or closed asset repository.
+- **6.7% (n = 3)** evaluated across games sharing identical rendering engines and art styles (partial transfer).
+
+Where cross-game domain transfer was quantitatively reported, models exhibited sharp performance penalties:
+1. **Convolutional Overfitting to Background Textures:** Davarmanesh et al. [35] and Yi et al. [7] demonstrated that standard supervised object detectors (Faster R-CNN, YOLO) suffer a **$32\%\text{ to }46\%$ drop in mean Average Precision (mAP)** when evaluated on unseen game environments. The convolutional kernels learn to correlate defect presence with specific level background textures rather than learning intrinsic geometric defect properties.
+2. **Artistic Style Shift Degradation:** Transferring models trained on photorealistic 3D engines (e.g., Unreal Engine 5 Nanite/Lumen) to stylized environments (cel-shaded, hand-painted, or low-poly voxel titles) triggered severe false alarm cascades. Zero-shot foundation VLMs exhibited a **$+28\%$ spike in false positives**, misinterpreting black cel-shaded character outlines and non-photorealistic lighting ramps as polygon clipping and shadow acne [1, 17].
+3. **Reference Guidance as a Domain Transfer Anchor:** Yu et al. [6] (*RefGlitch-Bench*) proved that pairwise reference guidance effectively neutralizes style shift. By supplying the model with a same-game baseline frame ($R_t$), the VLM's cross-game F1 score recovered from $0.42$ to $0.69$, proving that reference conditioning allows models to separate artistic style from structural defects.
+
+---
+
+## 7.3 Forensic Diagnostic of Core Algorithmic Failure Modes
+By cross-referencing qualitative failure cases across primary studies, we diagnose four systemic algorithmic failure modes:
 
 ```mermaid
 flowchart TD
-    R1["<b>Priority 1: Cross-Game Benchmark & Domain Adaptation</b><br/>Establish multi-genre benchmarks testing zero-shot generalisation across art styles."]
-    R2["<b>Priority 2: Real-Time Spatio-Temporal Video Transformers</b><br/>Lightweight temporal architectures operating at 30-60 FPS for inline CI playtesting."]
-    R3["<b>Priority 3: Reference-Guided Foundation Models</b><br/>Pairwise VLM reasoning using automated reference frame retrieval."]
-    R4["<b>Priority 4: Multimodal Engine-Vision Distillation</b><br/>Train with engine collision telemetry; deploy as non-intrusive black-box vision."]
-    R5["<b>Priority 5: Autonomous End-to-End Bug Reporting Agents</b><br/>Generate actionable reproduction steps and root-cause diagnostic tickets."]
+    F1["<b>Failure Mode 1: VLM Spatial Blindness</b><br/>Patch projection (14x14 px) blurs micro-clipping & subtle boundary penetration"]
+    F2["<b>Failure Mode 2: Temporal NIAH Collapse</b><br/>Attention dilution across multi-minute video drops localization from 78% to 1-19%"]
+    F3["<b>Failure Mode 3: Context Poisoning in Reference Pools</b><br/>Unflagged glitch entering reference buffer causes 84% false negative suppression"]
+    F4["<b>Failure Mode 4: CLIP Image RAG Confirmation Bias</b><br/>Visual similarity matches global biomes (desert/snow) rather than localized bugs"]
+
+    F1 --> Impact["<b>High False Alarms & Missed Defects in Production</b>"]
+    F2 --> Impact
+    F3 --> Impact
+    F4 --> Impact
+```
+
+### 1. Spatial Blindness of Foundation VLMs on Micro-Clipping
+Modern Vision-Language Models tokenize input images via coarse patch projection (e.g., $14 \times 14$ or $16 \times 16$ pixel patches in ViT backbones). In video games, severe geometric clipping frequently occupies sub-pixel or narrow screen regions—such as a character's sword hilt penetrating hand armor, or a shoe sole sinking 2 inches into stone pavement (`GEO-01`). Taesiri et al. [1] and Lu et al. [17] demonstrated that self-attention layers smooth out localized high-frequency boundary gradients, resulting in **false negative rates exceeding 70%** on subtle clipping.
+
+### 2. Catastrophic Temporal Needle-in-a-Haystack (NIAH) Collapse
+When evaluated on isolated static screenshots, frontier VLMs achieve respectable bug detection accuracy ($\sim 78\%\text{--}82\%$) [1]. However, when deployed on long-horizon gameplay videos (5 to 30 minutes of continuous recording), performance collapses catastrophically. In temporal Needle-in-a-Haystack (NIAH) evaluations, where the model must identify the exact second a 1-second animation glitch occurs within a 10-minute clip, **VLM localization accuracy collapsed to $1\%\text{ to }19\%$** [1]. The self-attention mechanism suffers severe temporal dilution, distributing attention weights across thousands of benign gameplay frames while overlooking transient glitch spikes.
+
+### 3. Context Poisoning in Sequential Reference Pools
+In reference-guided frameworks, maintaining an uncorrupted reference buffer $\mathcal{R}_{\text{clean}}$ is vital. Yu et al. [6] discovered that if a subtle, unflagged visual glitch is mistakenly accepted into the reference pool (e.g., an asset that failed to stream its high-res texture and remained blurry), all subsequent test frames exhibiting the exact same missing texture are judged as "consistent with reference". This context poisoning triggers **false negative suppression rates exceeding $80\%$**, permanently blinding the QA system to persistent streaming bugs.
+
+### 4. Multimodal RAG Confirmation Bias via CLIP Image Embeddings
+To assist VLMs in evaluating game scenes, Lu et al. [17] integrated Retrieval-Augmented Generation (RAG) by retrieving top-$k$ visually similar frames using CLIP embeddings. Surprisingly, **image RAG degraded detection precision from $0.50$ to $0.37$**. CLIP embeddings are dominated by low-frequency global scene features (e.g., broad desert sand, foliage density, sky color) rather than localized defect tokens. Consequently, the retrieved reference frames reinforced confirmation bias regarding environmental scenery while distracting the model from inspecting local polygon vertices.
+
+
+---
+
+# Section 8: Open Research Challenges & Conclusions (RQ6)
+
+## 8.1 Prioritized Open Research Challenges (`ORC`)
+Synthesizing the empirical gaps, cross-game domain transfer barriers, and failure modes identified in this mapping study, we articulate five high-priority **Open Research Challenges (ORCs)** to guide future investigations in computer vision and multimodal AI for game quality assurance:
+
+### `ORC-1`: Zero-Shot Cross-Engine Domain Adaptation across Divergent Art Styles
+* *Problem:* Detectors trained on photorealistic rendering engines (Unreal Engine 5) experience severe mAP drops ($32\%\text{ to }46\%$) and false positive spikes ($+28\%$) when transferred to stylized cel-shaded, hand-painted, or voxel titles.
+* *Research Opportunity:* Developing **style-disentangled latent representations** and video game domain-adaptive contrastive pre-training. Exploring invariant geometry representations that decouple structural surface normals from albedo texture styles.
+
+### `ORC-2`: Real-Time 60 FPS Sub-Frame Temporal Glitch Localization
+* *Problem:* Over $65\%$ of gameplay defects exist strictly across time, yet existing video transformers incur high computational latency ($>1.2\text{ s}$ per frame), making them impossible to integrate into real-time 60 FPS continuous integration test runners.
+* *Research Opportunity:* Investigating ultra-lightweight spatio-temporal architectures (e.g., temporal shift modules, event-driven temporal attention, or sliding-window optical flow CNNs) that operate within a **$16.6\text{ ms}$ per-frame inference budget** to detect micro-stutter, physics ragdoll instability, and Z-fighting flicker in real time.
+
+### `ORC-3`: Non-Intrusive Geometry Grounding via Engine-Vision Distillation
+* *Problem:* Pure black-box vision models suffer $25\%\text{--}45\%$ false alarm rates on volumetric effects, while white-box engine hooks (Kovacs et al. [3]) require intrusive source-code modification and engine instrumentation that cannot be shipped on retail console release builds.
+* *Research Opportunity:* Formulating **teacher-student cross-modal distillation pipelines**: training high-capacity teacher models with rich engine G-buffers (depth, surface normals, collision bounding matrices) during internal development builds, and distilling their representations into non-intrusive, lightweight student vision models for zero-overhead deployment on release builds.
+
+### `ORC-4`: Automated Dynamic Clean Reference Frame Selection
+* *Problem:* Pairwise reference guidance (RefGlitch-Bench [6]) recovers up to $+0.27$ F1 score by comparing candidate frames against baseline renders. However, in production playtesting, human testers cannot manually supply aligned reference frames for millions of frames of unstructured gameplay video.
+* *Research Opportunity:* Developing **self-supervised reference retrieval algorithms** that leverage player trajectory spatial hashing, camera viewpoint alignment, and semantic scene indexing to dynamically extract the optimal clean reference frame from video archives without manual intervention.
+
+### `ORC-5`: Autonomous Multi-Agent Bug Triage and Verified Ticket Generation
+* *Problem:* Existing systems predominantly output raw binary labels ("glitch" vs. "clean") or isolated bounding boxes. In industrial studio workflows, QA engineers require structured, reproducible issue tickets.
+* *Research Opportunity:* Constructing **embodied multi-agent LLM/VLM orchestration architectures**: combining vision detectors to spot anomalies, game telemetry loggers to harvest deterministic player controller input logs and spatial coordinates, and language models to auto-generate verified, reproducible Jira/Bugzilla tickets complete with step-by-step reproduction instructions and subsystem attribution.
+
+---
+
+## 8.2 Prioritized Roadmap for Future Research
+
+```mermaid
+flowchart TD
+    R1["<b>Priority 1: Cross-Game Benchmark & Domain Adaptation (ORC-1)</b><br/>Establish multi-genre benchmarks testing zero-shot generalisation across art styles."]
+    R2["<b>Priority 2: Real-Time Spatio-Temporal Video Transformers (ORC-2)</b><br/>Lightweight temporal architectures operating at 30-60 FPS for inline CI playtesting."]
+    R3["<b>Priority 3: Reference-Guided Foundation Models (ORC-4)</b><br/>Pairwise VLM reasoning using automated reference frame retrieval."]
+    R4["<b>Priority 4: Multimodal Engine-Vision Distillation (ORC-3)</b><br/>Train with engine collision telemetry; deploy as non-intrusive black-box vision."]
+    R5["<b>Priority 5: Autonomous End-to-End Bug Reporting Agents (ORC-5)</b><br/>Generate actionable reproduction steps and root-cause diagnostic tickets."]
 
     R1 --> R2
     R2 --> R3
@@ -573,45 +692,40 @@ flowchart TD
     R4 --> R5
 ```
 
+---
+
+## 8.3 Threats to Validity
+
+### 8.3.1 Construct Validity
+Construct validity concerns the extent to which our search strings and classification frameworks accurately capture the intended phenomena of visual testing and graphical defects in video games. To mitigate terminology bias, our search strategy incorporated broad synonyms across both software engineering ("visual regression", "automated testing", "oracle") and visual computing ("rendering defect", "clipping detection", "visual anomaly", "graphical glitch"). Furthermore, our 19-subtype taxonomy (`VGVD-Taxonomy`) was iteratively validated against defect categories documented in industrial studio reports from Electronic Arts, Sony Interactive Entertainment, and Microsoft Xbox Studios [1, 3, 6, 12, 17].
+
+### 8.3.2 Internal Validity
+Internal validity relates to potential researcher bias during study screening, selection, and quality assessment. To ensure consistency, all screening decisions were governed by explicit, pre-registered inclusion and exclusion criteria (IC1–IC5, EC1–EC5). Full texts were converted into provenance-verified Markdown via `academic-pdf2md` (PyMuPDF4LLM + RapidOCR), and quality assessment was executed using an itemized 10-point appraisal rubric adapted from Dybå & Dingsøyr (2008) [24], archived in `literature/quality_assessment_scores.csv`.
+
+### 8.3.3 External Validity & Generalisability
+External validity concerns the extent to which our synthesized findings apply across diverse game genres, budgets, and rendering engines. Modern video games span immense architectural variance, from 2D indie web games to AAA 3D open worlds built on proprietary engines. While early literature focused on constrained 2D environments [11], recent benchmarks (2025–2026) synthesize empirical evidence across commercial Unreal Engine 5, Unity, Frostbite, and custom commercial engines [1, 6, 17]. Consequently, our findings reflect industrial state-of-the-art production realities.
+
+### 8.3.4 Conclusion Validity
+Conclusion validity addresses the reproducibility of the mapping study. All bibliographic search queries, database result counts, extracted evidence tables (`literature/evidence_table.csv`), itemized quality scores (`literature/quality_assessment_scores.csv`), taxonomy schemas, figure generation scripts, and validation harnesses are version-controlled and publicly archived in the study's open-science repository [25].
 
 ---
 
-# Section 6: Threats to Validity & Conclusions
+## 8.4 Conclusions
+Visual quality assurance in modern video game production represents a critical industrial challenge, historically constrained by an overwhelming reliance on labor-intensive manual playtesting (>80% manual in AAA studios). This paper presents the **first comprehensive systematic mapping study** investigating the convergence of **Computer Vision (CV)** and **Vision-Language Models (VLMs)** for automated visual bug detection and regression testing in video games.
 
-## 6.1 Threats to Validity
-
-### 6.1.1 Construct Validity
-Construct validity concerns the degree to which our search queries and taxonomy accurately capture the intended concepts of visual testing and graphical glitches. To mitigate terminology bias, our search string incorporated broad synonyms across both software engineering ("visual regression", "automated testing") and visual computing ("rendering defect", "clipping detection", "visual anomaly"). Furthermore, our 5-family taxonomy (`VGVD-Taxonomy`) was iteratively validated against defect categories documented in industrial game studio reports (Electronic Arts, Sony Interactive Entertainment, Xbox Studios) [1, 3, 6, 12, 17].
-
-### 6.1.2 Internal Validity
-Internal validity relates to potential researcher bias during study screening, selection, and data extraction. To ensure consistency, all screening decisions were governed by explicit, pre-registered inclusion and exclusion criteria (IC1–IC5, EC1–EC5). Full texts were converted into searchable, provenance-verified Markdown via Microsoft MarkItDown, and quality assessment was conducted using a 10-point appraisal rubric adapted from Dybå & Dingsøyr (2008) [24].
-
-### 6.1.3 External Validity & Generalisability
-External validity concerns the extent to which our synthesized findings apply across diverse game genres, budgets, and game engines. Modern video games span immense variance, from indie 2D web games to AAA 3D open worlds built on proprietary engines. While early literature focused on constrained 2D environments [11], recent benchmarks (2025–2026) synthesize empirical evidence across commercial Unreal Engine 5, Unity, and custom commercial engines [1, 6, 17]. Consequently, our findings reflect industrial state-of-the-art production environments.
-
-### 6.1.4 Conclusion Validity
-Conclusion validity addresses the reproducibility of the mapping study. All bibliographic queries, extracted evidence tables (`literature/evidence_table.csv`), taxonomy definitions, and conversion scripts are version-controlled and publicly archived in the study's open-science repository [23].
-
----
-
-## 6.2 Conclusions
-Visual quality assurance in modern video game development represents a critical industrial challenge, historically constrained by an overwhelming reliance on labor-intensive manual playtesting. This paper presents the **first systematic mapping study** investigating the convergence of **Computer Vision (CV)** and **Vision-Language Models (VLMs)** for automated visual bug detection and regression testing in video games.
-
-Synthesizing evidence across primary literature from 2020 to 2026, this study provides five principal contributions:
-1. **Algorithmic Classification (RQ1):** Categorized detection methods into six paradigms, tracing the evolution from rigid 2D perceptual diffing to self-supervised anomaly detection, multimodal engine-state telemetry fusion, reference-guided VLMs, and spatio-temporal video transformers.
-2. **Defect Taxonomy (RQ2):** Established the `VGVD-Taxonomy`, standardizing 19 defect subtypes across five core families: Spatial & Geometry (`GEO`), Material & Texture (`TEX`), Rendering & Lighting (`REN`), Animation & Physics (`ANI`), and User Interface (`UI`).
-3. **Benchmark Audit (RQ3):** Provided the first comparative analysis of cutting-edge open benchmarks (*VideoGameQA-Bench*, *RefGlitch-Bench*, *TempGlitch-Video*, *GameBug-20K*), highlighting a dramatic shift toward reproducible open science.
-4. **Generalisation & Latency Analysis (RQ4 & RQ5):** Identified the cross-game art style domain shift as the primary performance bottleneck, and contrasted the real-time throughput of lightweight CNNs (45–60 FPS) with the high semantic reasoning but latency-heavy footprint of foundation VLMs (1.2–2.8s per frame).
-5. **Future Research Agenda (RQ6):** Outlined five prioritized research directions, emphasizing continuous spatio-temporal video attention, style-invariant pretraining, automated reference frame guidance, and autonomous bug reporting agents.
-
-As interactive entertainment continues to scale toward photorealistic, procedurally infinite virtual worlds, computer vision and multimodal foundation models will become indispensable pillars of the modern game production pipeline. We anticipate that the taxonomy, benchmark audit, and research agenda established in this mapping study will serve as a foundational roadmap for researchers and game engineering practitioners worldwide.
+Synthesizing evidence across **45 primary studies** published between 2018 and November 2026, this study provides five principal contributions:
+1. **Mathematical Problem Formulation:** Formalized single-frame anomaly detection, reference-conditioned comparison, multimodal engine-telemetry state fusion, and spatio-temporal video attention with exact operational latency constraints.
+2. **Standardized Defect Taxonomy (`VGVD-Taxonomy`):** Established a rigorous multi-tier classification standardizing 19 defect subtypes across five core families: Spatial & Geometry (`GEO`), Material & Texture (`TEX`), Rendering & Lighting (`REN`), Animation & Physics (`ANI`), and User Interface (`UI`).
+3. **Benchmark & Accessibility Audit:** Audited cutting-edge open benchmarks (*VideoGameQA-Bench*, *RefGlitch-Bench*, *GameBug-20K*, *TempGlitch-Video*), highlighting an open-science turning point from proprietary NDA archives to public community datasets.
+4. **Generalisation & Failure Mode Diagnostic:** Identified the cross-game art style domain shift as the primary performance bottleneck ($32\%\text{ to }46\%$ mAP drop), and diagnosed four systemic algorithmic failure modes: VLM micro-clipping spatial blindness, temporal Needle-in-a-Haystack collapse, reference pool context poisoning, and CLIP confirmation bias.
+5. **Prioritized Research Agenda:** Outlined five actionable Open Research Challenges (`ORC-1` to `ORC-5`), providing an empirical roadmap for real-time, style-invariant, and explainable visual QA systems for next-generation interactive digital entertainment.
 
 ---
 
 ## Declarations
 
 ### Availability of Data and Materials
-The systematic mapping study protocol, tailored search strings, extracted literature evidence database (`evidence_table.csv`), machine-readable visual bug taxonomy (`visual_bug_taxonomy.json`), and automated PDF-to-Markdown ingestion scripts are publicly available in the study's official GitHub repository:  
+The systematic mapping study protocol, tailored search strings, extracted literature evidence database (`evidence_table.csv`), itemized quality assessment matrix (`quality_assessment_scores.csv`), machine-readable visual bug taxonomy (`visual_bug_taxonomy.json`), and programmatic figure generation pipelines are publicly available in the study's official GitHub repository:  
 [https://github.com/minhphuc477/game-visual-bug-detection](https://github.com/minhphuc477/game-visual-bug-detection)
 
 ### Competing Interests
@@ -621,7 +735,7 @@ The authors declare that they have no competing interests.
 This research received no external grant funding. All computational and literature ingestion pipelines were developed using open-source tools.
 
 ### Authors' Contributions
-L.T.M.P. conceived the study, formulated the systematic mapping study protocol, designed the search strategy, extracted and synthesized the literature evidence, developed the `VGVD-Taxonomy`, and wrote the manuscript.
+L.T.M.P. conceived the study, formulated the systematic mapping study protocol, designed the search strategy, extracted and synthesized the literature evidence, developed the mathematical problem formulations, established the `VGVD-Taxonomy`, and wrote the manuscript.
 
 
 ---

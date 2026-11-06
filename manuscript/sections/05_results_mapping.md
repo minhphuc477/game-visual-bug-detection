@@ -1,6 +1,6 @@
-# Section 4: Systematic Mapping Results
+# Section 5: Algorithmic Landscape Analysis & Mapping Results
 
-## 4.1 Publication Trajectory and Venue Demographics
+## 5.1 Publication Trajectory and Venue Demographics
 Between 2018 and November 2026, research into automated visual quality assurance in video games evolved from isolated industrial heuristics into a vibrant, multi-disciplinary research domain spanning Software Engineering (SE), Computer Vision (CV), and Game AI. As visualized in **Figure 2**, publication activity expanded significantly from 2021 onward, driven by deep learning anomaly detection and accelerating in 2024–2026 with multimodal foundation models.
 
 ![Figure 2: Publication Trajectory and Venue Distribution (2018–2026, N = 45)](figures/figure2_publications_by_year.png)
@@ -13,7 +13,7 @@ Of the **45 included primary studies**:
 
 ---
 
-## 4.2 RQ1: Computer Vision & AI Detection Architectures
+## 5.2 RQ1: Computer Vision & AI Detection Architectures
 Across the 45 primary studies, we identify six distinct architectural paradigms employed for visual testing and glitch detection in video games, illustrated in **Figure 3**:
 
 ![Figure 3: Systematic Mapping Bubble Plot: Algorithmic Paradigm vs. Visual QA Task](figures/figure3_technique_vs_task_bubble.png)
@@ -55,8 +55,8 @@ To resolve dynamic glitches that do not exist in static frames, **Muller et al. 
 
 ---
 
-## 4.3 RQ2: Bug Manifestation Coverage Across `VGVD-Taxonomy`
-Mapping the 45 primary studies against the 19 defect subtypes of `VGVD-Taxonomy` reveals stark disparities in research coverage, as depicted in **Figure 4**:
+## 5.3 RQ2: Bug Manifestation Coverage Across `VGVD-Taxonomy`
+Mapping the 45 primary studies against the 19 defect subtypes of `VGVD-Taxonomy` reveals stark disparities in research coverage, depicted in **Figure 4**:
 
 ![Figure 4: Defect Subtype Coverage Across Primary Studies (VGVD-Taxonomy)](figures/figure4_defect_category_distribution.png)
 
@@ -72,52 +72,7 @@ Mapping the 45 primary studies against the 19 defect subtypes of `VGVD-Taxonomy`
 
 ---
 
-## 4.4 RQ3: Benchmark Datasets and Reproducibility Audit
-Auditing data sources across the 45 studies reveals a decisive historical transition:
-
-| Benchmark / Dataset | Year | Affiliation | Modality | Scale | Evaluated Games | Public Availability | Ground-Truth Format |
-|---|---|---|---|---|---|---|---|
-| **VideoGameQA-Bench** [1] | 2025 | Univ. Alberta & Sony IE | Image / Video + Text | 3,450 scenarios | 12 games (3D/2D/Voxel) | **Public (Open Access)**<br>[Project Repo](https://asgaardlab.github.io/videogameqa-bench/) | QA Pairs, Category Labels, Coarse Bounding Boxes |
-| **RefGlitch-Bench** [6] | 2026 | Univ. Alberta & Sony IE | Paired Reference Frames | 5,200 pairs | 7 games (3D Action/RPG) | **Public Benchmark**<br>arXiv:2604.11082 | Reference-Test Frame Pairs, Bounding Boxes, Glitch Types |
-| **GameBug-20K** [17] | 2026 | Univ. Alberta & Electronic Arts | Video Keyframes | 19,738 keyframes | 8 EA commercial games | **Research Archive**<br>arXiv:2603.22706 | Frame-level Binary Labels + Bug Descriptions |
-| **TempGlitch-Video** [13] | 2026 | Academic Consortium | 60 FPS Video Streams | 120 video clips (42h) | 6 3D titles | **Public (Open Science)**<br>arXiv:2605.21443 | Temporal Frame Bounds ($t_{start}, t_{end}$), Defect Class |
-| **StateGlitch-3D** [3] | 2026 | Academic / Elsevier | Multimodal (RGB + State) | 8,400 frames | 3 Unreal/Unity games | **Restricted / On Request**<br>ESWA DOI | Bounding Boxes + 3D Mesh Collision Telemetry |
-| **GameGlitch-Hybrid** [7] | 2025 | Academic (AIIDE) | Semi-Supervised Frames | 14,200 frames | 5 commercial games | **Public (AAAI)** | Bounding Boxes + Semi-supervised Pseudo-Labels |
-| **Xbox FPPC Dataset** [12] | 2023 | Xbox Studios QuAIL | First-Person RGB | 6,500 frames | 1 open-world game (*GiantMap*) | **Proprietary (Microsoft)** | Binary Clipping Labels + Exemplar Embeddings |
-| **CanvasBug-Bench** [11] | 2022 | Academic (ASE) | 2D Canvas Bitmaps | 24 injected bugs | 10 HTML5 canvas games | **Public (GitHub)** | Pixel Difference Masks + Sprite Assets |
-
-> **Key Finding (RQ3):** Prior to 2024, empirical video game QA was severely bottlenecked by proprietary NDA restrictions (e.g., Rahman at Microsoft Xbox [12], Bergdahl at EA Frostbite [26]). Between 2025 and 2026, the ecosystem reached an open-science watershed with the release of **VideoGameQA-Bench**, **RefGlitch-Bench**, and **TempGlitch-Video**, providing accessible benchmarks spanning dozens of commercial-grade 3D, stylized, and 2D environments.
-
----
-
-## 4.5 RQ4 & RQ5: Evaluation Methodologies and Cross-Game Generalisation
-As illustrated in **Figure 5**, empirical evaluations exhibit two structural divides: **input modality** and **cross-game generalisation**.
-
-![Figure 5: Empirical Modality Breakdown and Cross-Game Generalisation Verification](figures/figure5_cross_game_modalities.png)
-
-### 1. Evaluation Metrics and Operational Latency (RQ4)
-Across the primary studies, three metric tiers dominate:
-1. **Precision, Recall, and F1-Score:** The standard formulation for binary glitch detection and multi-class classification.
-2. **Intersection-over-Union (IoU) and mean Average Precision (mAP):** Used for defect localization (e.g., $IoU \ge 0.5$ in supervised detectors).
-3. **Inference Latency & Operational Throughput (FPS):**
-   - Lightweight convolutional detectors (e.g., YOLOv8, ResNet-50) achieve **45–60 FPS**, allowing inline real-time playtest assertions in CI pipelines.
-   - Self-supervised patch-based anomaly detectors (PatchCore, DINO ViT) operate at **15–25 FPS**, viable for near-real-time automated regression suites.
-   - Commercial multimodal VLMs (GPT-4V, Gemini 1.5 Pro) exhibit latencies of **1.2 to 2.8 seconds per frame**, making them completely unusable for live gameplay assertions and restricting their role to asynchronous, post-session video log triage.
-
-### 2. The Cross-Game Domain Gap Barrier (RQ5)
-Of the 45 primary studies:
-- **55.6% (n = 25)** explicitly evaluated their systems across multiple distinct game titles.
-- **37.8% (n = 17)** evaluated exclusively on a single game environment or closed asset library.
-- **6.7% (n = 3)** evaluated across multiple games built on the exact same engine and art style (partial transfer).
-
-Where cross-game transfer was empirically measured, models exhibited severe performance degradation:
-- Supervised object detectors trained on realistic 3D games suffered a **32% to 46% drop in mAP** when transferred to stylized cel-shaded or low-poly voxel environments [7, 35].
-- Zero-shot VLMs suffered substantial false discovery rate increases (+28% false positives) when inspecting non-photorealistic titles, mistaking stylized artistic outlines for geometry boundary clipping [1, 17].
-- Reference-guided prompting (Yu et al. [6]) mitigated this degradation by conditioning the model on same-game baseline frames, recovering cross-game F1 from $0.42$ to $0.69$.
-
----
-
-## 4.6 Thematic Cluster Taxonomy of the 45-Study Corpus
+## 5.4 Thematic Cluster Taxonomy of the 45-Study Curated Corpus
 To provide an exhaustive empirical map, our synthesized corpus categorizes all 45 primary studies across six thematic clusters:
 
 | Thematic Research Cluster | Count | Included Studies | Primary Technical Innovations |
