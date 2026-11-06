@@ -1,0 +1,83 @@
+tree:
+  - id: RQ1_Detection_Paradigms
+    type: root_hypothesis
+    status: explicit
+    source: "Taesiri 2025; Lu 2026; Kovacs 2026"
+    description: "Can automated computer vision and foundation VLMs replace manual visual playtesting in commercial 3D video games?"
+    children:
+      - id: H01_ZeroShot_VLM
+        type: hypothesis
+        status: explicit
+        source: "VideoGameQA-Bench (NeurIPS 2025)"
+        description: "Zero-shot frontier multimodal models (GPT-4o, Gemini 2.5) can identify graphical defects out-of-the-box from raw screenshots."
+        children:
+          - id: D01_Enforce_JSON_CoT
+            type: decision
+            status: explicit
+            source: "Taesiri 2025 Section 3.3"
+            description: "Enforce intermediate Chain-of-Thought reasoning field in JSON schema before outputting boolean flag."
+            children:
+              - id: R01_CoT_Accuracy_Lift
+                type: result
+                status: explicit
+                source: "Taesiri 2025 Table 2"
+                description: "Models achieve up to 82.8% glitch detection accuracy on static images."
+          - id: DEAD_END_Video_NIAH
+            type: dead_end
+            status: explicit
+            source: "Taesiri 2025 Section 5.1"
+            description: "Evaluating video streams at 1 FPS for temporal Needle-in-a-Haystack causes catastrophic localization failure (1-19% accuracy)."
+      - id: H02_Triage_At_Scale
+        type: hypothesis
+        status: explicit
+        source: "Electronic Arts FSE 2026"
+        description: "Keyframe extraction can compress 41 hours of soak footage for automated triage."
+        children:
+          - id: D02_FFmpeg_IFrame
+            type: decision
+            status: explicit
+            source: "Lu 2026 Section 3.1"
+            description: "Extract I-frames to compress 4.3M frames into 19,738 keyframes (99.54% reduction) with 98.79% bug coverage."
+          - id: DEAD_END_Image_RAG
+            type: dead_end
+            status: explicit
+            source: "Lu 2026 Section 5.2"
+            description: "Retrieving historical JIRA tickets via CLIP visual similarity introduces confirmation bias and degrades precision from 0.50 to 0.37."
+          - id: D03_VLM_As_Critic
+            type: decision
+            status: explicit
+            source: "Lu 2026 Section 5.2.1"
+            description: "Deploy gpt-5-mini as a secondary judge/critic over gpt-4.1-mini predictions, improving precision to 0.55."
+      - id: H03_Reference_Guided_QA
+        type: hypothesis
+        status: explicit
+        source: "Sony RefGlitch-Bench 2026"
+        description: "Supplying a within-video reference frame resolves the visual ambiguity of stylized game art."
+        children:
+          - id: D04_LastCleanFrame_Policy
+            type: decision
+            status: explicit
+            source: "Yu 2026 Section 4"
+            description: "Select most recent predicted glitch-free keyframe (LastCleanFrame) rather than adjacent frame (PreviousFrame)."
+            children:
+              - id: R02_F1_Recovery
+                type: result
+                status: explicit
+                source: "Yu 2026 Table 2"
+                description: "LastCleanFrame recovers F1 to 0.69 (vs 0.42 for NoRef), approaching the 0.74 oracle upper bound."
+          - id: DEAD_END_PreviousFrame_Contrast
+            type: dead_end
+            status: explicit
+            source: "Yu 2026 Section 6.2"
+            description: "Using frame t-1 fails because persistent glitches lack contrast when both test and reference frames contain the same bug."
+      - id: H04_Multimodal_Telemetry_Fusion
+        type: hypothesis
+        status: explicit
+        source: "StateGlitch-3D (ESWA 2026)"
+        description: "Fusing G-buffer depth and collision queries eliminates 42% of false positives caused by atmospheric shaders."
+        children:
+          - id: D05_DualStream_Gated_Attention
+            type: decision
+            status: explicit
+            source: "Kovacs 2026 Section 3"
+            description: "Combine 7-channel visual tensor (RGB+D+N) with telemetry GNN via cross-modal gated attention."
