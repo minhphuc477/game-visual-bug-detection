@@ -53,3 +53,13 @@ conversion.log
 # Raw PDFs: ignore binary PDFs to keep repo lightweight and avoid 50MB+ GitHub limits
 papers/**/*.pdf
 !papers/**/.gitkeep
+
+# LaTeX build artifacts
+manuscript/*.aux
+manuscript/*.log
+manuscript/*.out
+manuscript/*.toc
+manuscript/*.bbl
+manuscript/*.blg
+manuscript/*.synctex.gz
+

@@ -1,6 +1,6 @@
 ---
-title: "Computer Vision-Based Visual Testing in Video Games: A Systematic Mapping Study and Agent-Native Research Artifact"
-authors: ["Minh-Phuc Tran"]
+title: "Computer Vision and Vision-Language Approaches to Visual Quality Assurance in Video Games: A Systematic Mapping Study of Tasks, Datasets, and Evaluation Methods"
+authors: ["Le Tran Minh Phuc"]
 year: 2026
 venue: "Visual Computing for Industry, Biomedicine, and Art (VCIBA) / SpringerOpen"
 doi: "10.1186/s42492-026-vgvd-sms"
@@ -13,16 +13,16 @@ claims_summary:
   - "Engine-internal telemetry fusion (depth buffers, collision bounding hulls, transform matrices) eliminates 42% of false positives caused by artistic rendering styles compared to pure RGB vision."
   - "Cross-game visual domain transfer exhibits an acute generalisation penalty (>35% mAP degradation) when moving across radically divergent rendering styles (e.g., photorealistic UE5 vs. stylized/voxel art)."
   - "Weak supervision combining promptable zero-shot segmentation (SAM) with contrastive negative-space weapon overlays achieves 95.2% accuracy in low-prevalence clipping regimes using only 5 human-annotated exemplar frames."
-abstract: "Visual testing in modern 3D video games remains predominantly manual in AAA game production, consuming up to 80% of QA resources due to non-deterministic rendering, dynamic lighting, procedural asset loading, and complex camera trajectories. This systematic mapping study and agent-native research artifact synthesizes the state-of-the-art literature across 24 primary studies spanning 2018 to 2026. We categorize visual defects into a rigorous 5-family taxonomy (Geometric, Texture, Rendering, Animation/Temporal, and UI/HUD), benchmark automated detection paradigms ranging from classical perceptual hashing to deep Vision Transformers and Multimodal Vision-Language Models (VLMs), and formulate the core research bottlenecks: temporal localization latency, cross-game domain generalization, and oracle ambiguity."
+abstract: "Visual testing in modern 3D video games remains predominantly manual in AAA game production, consuming up to 80% of QA resources due to non-deterministic rendering, dynamic lighting, procedural asset loading, and complex camera trajectories. This systematic mapping study and agent-native research artifact synthesizes the state-of-the-art literature across 45 primary studies spanning 2018 to November 2026. We categorize visual defects into a rigorous 5-family taxonomy (Geometric, Texture, Rendering, Animation/Temporal, and UI/HUD), benchmark automated detection paradigms ranging from classical perceptual hashing to deep Vision Transformers and Multimodal Vision-Language Models (VLMs), and formulate the core research bottlenecks: temporal localization latency, cross-game domain generalization, and oracle ambiguity."
 ---
 
-# Computer Vision-Based Visual Testing in Video Games: A Systematic Mapping Study
+# Computer Vision and Vision-Language Approaches to Visual Quality Assurance in Video Games: A Systematic Mapping Study
 
 ## Overview
 
 This Agent-Native Research Artifact (ARA) provides a machine-traversable, empirically grounded, and falsifiable representation of the research landscape surrounding automated visual bug detection in video games. It bridges software engineering QA practices with state-of-the-art computer vision and foundation vision-language models (VLMs).
 
-The artifact captures knowledge extracted from 24 primary peer-reviewed studies (including *VideoGameQA-Bench* [NeurIPS 2025], *GameBug-20K* [FSE 2026], *RefGlitch-Bench* [2026], *StateGlitch-3D* [ESWA 2026], and Xbox QuAIL *Weak Supervision* [BMVC 2023]). It formalizes five core falsifiable claims, six declarative verification experiments, full architectural blueprints, Python execution stubs, and exact empirical evidence tables.
+The artifact captures knowledge extracted from 45 primary studies (including *VideoGameQA-Bench* [NeurIPS 2025], *GameBug-20K* [FSE 2026], *RefGlitch-Bench* [2026], *TempGlitch* [2026], *StateGlitch-3D* [ESWA 2026], and Xbox QuAIL *Weak Supervision* [BMVC 2023]). It formalizes five core falsifiable claims, six declarative verification experiments, full architectural blueprints, Python execution stubs, and exact empirical evidence tables.
 
 ---
 

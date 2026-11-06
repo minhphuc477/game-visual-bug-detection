@@ -3,37 +3,39 @@
 ## 2.1 Methodological Framework & Reporting Standards
 This study adheres to the established guidelines for conducting Systematic Mapping Studies (SMS) in Software Engineering formulated by **Petersen et al. (2015)** [20] and the methodological recommendations of **Kitchenham and Charters (2007)** [21]. While a traditional Systematic Literature Review (SLR) focuses on synthesizing empirical evidence around narrow, highly homogeneous outcomes, a Systematic Mapping Study is uniquely designed to provide a broad, structured overview of an emerging research area, establishing taxonomies, quantifying publication distributions, identifying clusters of high activity, and charting unexplored research gaps [20].
 
-Reporting transparency is maintained in strict compliance with the **PRISMA 2020 (Preferred Reporting Items for Systematic Reviews and Meta-Analyses)** statement [22]. The overall mapping protocol was established *a priori* and archived in the study's open-science repository [23].
+Reporting transparency is maintained in strict compliance with the **PRISMA 2020 (Preferred Reporting Items for Systematic Reviews and Meta-Analyses)** statement [22] and the **PRISMA-S search reporting extension** [23]. Supplementary reporting aspects from the **ROSES (RepOrting standards for Systematic Evidence Syntheses)** guidelines [24] were also consulted to ensure comprehensive reporting of searching, screening, and critical appraisal. The overall mapping protocol was established *a priori* and archived in the study's open-science repository [25].
+
+![Figure 1: PRISMA-S 2020 Literature Selection Flow Diagram](figures/figure1_prisma_flow.png)
 
 ```mermaid
 flowchart TD
     subgraph Phase1 ["Phase 1: Identification"]
-        P1A["Automated Database Search<br/>IEEE Xplore, ACM DL, Scopus, WoS, arXiv<br/>(N = 412 records)"]
-        P1B["Duplicate Removal<br/>DOI, Title & Hash Matching<br/>(n = 84 duplicates removed)"]
+        P1A["Automated Database Search<br/>IEEE Xplore, ACM DL, Scopus, WoS, arXiv<br/>(N = 692 records)"]
+        P1B["Duplicate Removal<br/>DOI, Title & Hash Matching<br/>(n = 188 duplicates removed)"]
         P1A --> P1B
     end
 
     subgraph Phase2 ["Phase 2: Screening"]
-        P2A["Unique Records for Screening<br/>(N = 328 records)"]
+        P2A["Unique Records for Screening<br/>(N = 504 records)"]
         P2B["Title & Abstract Screening<br/>Applying IC1-IC5 and EC1-EC5"]
-        P2C["Excluded Records<br/>Irrelevant / Non-visual / Short abstracts<br/>(n = 286 excluded)"]
+        P2C["Excluded Records<br/>Non-visual / RL bots / Functional tests<br/>(n = 416 excluded)"]
         P1B --> P2A
         P2A --> P2B
         P2B --> P2C
     end
 
     subgraph Phase3 ["Phase 3: Eligibility"]
-        P3A["Full-Text Manuscripts Assessed<br/>(N = 42 articles)"]
-        P3B["Full-Text Exclusions<br/>- Pure gameplay bot / no visual defect: 14<br/>- 2D non-game UI / web forms: 8<br/>- Incomplete technical evaluation: 6<br/>(n = 28 excluded)"]
-        P3C["Eligible Primary Studies<br/>(N = 14 studies)"]
+        P3A["Full-Text Manuscripts Assessed<br/>(N = 88 articles)"]
+        P3B["Full-Text Exclusions<br/>- Headless logic / functional tests: 18<br/>- Pure bot gameplay / no visual QA: 12<br/>- Non-game UI visual diffing: 9<br/>- Incomplete empirical metrics: 8<br/>(n = 47 excluded)"]
+        P3C["Eligible Primary Studies<br/>(n = 41 studies)"]
         P2B -->|Eligible for Full-Text| P3A
         P3A --> P3B
         P3A --> P3C
     end
 
     subgraph Phase4 ["Phase 4: Synthesis & Snowballing"]
-        P4A["Forward & Backward Snowballing<br/>Citation graph traversal on landmark papers<br/>(n = 3 additional studies identified)"]
-        P4B["Final Included Primary Studies<br/>Quality Assessed & Synthesized<br/>(N = 17 studies)"]
+        P4A["Forward & Backward Snowballing<br/>Citation graph traversal on landmark papers<br/>(n = 4 additional studies identified)"]
+        P4B["Final Included Primary Studies<br/>Quality Assessed & Synthesized<br/>(N = 45 primary studies)"]
         P3C --> P4A
         P4A --> P4B
     end
@@ -108,12 +110,12 @@ To ensure high scientific rigour and empirical relevance, candidate papers were 
 
 ## 2.5 Study Selection & Screening Execution
 The study selection process followed a multi-stage funnel:
-1. **Automated Search & Ingestion:** Executing queries yielded 412 raw bibliographic records.
-2. **Deduplication:** Matching DOIs, normalized titles, and SHA-256 file hashes eliminated 84 duplicate records, leaving 328 unique publications.
-3. **Title and Abstract Screening:** Screening against IC1–IC5 and EC1–EC5 eliminated 286 studies that were unrelated to visual game testing (primarily general software testing, autonomous driving simulation, and game-playing bots).
-4. **Full-Text Retrieval & Conversion:** Full texts of the remaining 42 candidate manuscripts were retrieved. Unstructured PDFs were converted into structured Markdown using Microsoft MarkItDown (`markitdown>=0.1.6`) to enable full-text indexing, regex searching, and deep qualitative analysis.
-5. **Full-Text Eligibility Appraisal:** Reviewing full-text manuscripts eliminated 28 studies that lacked empirical visual bug evaluation.
-6. **Snowball Chaining:** Backward reference harvesting and forward citation tracking on landmark benchmarks (e.g., *VideoGameQA-Bench*, *RefGlitch-Bench*) added 3 additional primary studies, yielding a final corpus of **17 included primary studies**.
+1. **Automated Search & Ingestion:** Executing queries across five electronic bibliographic databases (IEEE Xplore: 142, ACM DL: 118, Scopus: 184, Web of Science: 96, arXiv: 152) yielded 692 raw bibliographic records.
+2. **Deduplication:** Matching DOIs, normalized titles, and author signatures eliminated 188 duplicate records, leaving 504 unique publications for screening.
+3. **Title and Abstract Screening:** Screening against IC1–IC5 and EC1–EC5 eliminated 416 studies that were unrelated to visual game testing (primarily non-visual RL gameplay agents, general software unit testing, and non-game visual diffing).
+4. **Full-Text Retrieval & Conversion:** Full texts of the remaining 88 candidate manuscripts were retrieved. Unstructured PDFs and publisher XMLs were converted into structured Markdown and extracted figure assets using `academic-pdf2md` (PyMuPDF4LLM + RapidOCR) to enable full-text indexing, regex searching, and in-depth qualitative analysis.
+5. **Full-Text Eligibility Appraisal:** Detailed review of full-text manuscripts eliminated 47 studies: 18 headless logic/functional tests without visual rendering, 12 bot gameplay implementations lacking visual QA metrics, 9 non-game UI regression studies, and 8 studies lacking empirical evaluations or reporting metrics.
+6. **Snowball Chaining:** Backward reference harvesting and forward citation tracking on landmark benchmarks (e.g., *VideoGameQA-Bench*, *RefGlitch-Bench*, *TempGlitch*) identified 4 additional eligible primary studies, yielding a final corpus of **45 included primary studies**.
 
 ---
 

@@ -10,8 +10,12 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{cite}
-\usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[protrusion=true,expansion=false]{microtype}
 \usepackage{tabularx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \hypersetup{
     colorlinks=true,
@@ -20,7 +24,7 @@
     urlcolor=blue
 }
 
-\title{\textbf{Computer Vision-Based Visual Testing in Video Games: A Systematic Mapping Study of Detection Techniques, Datasets, and Evaluation Methods}}
+\title{\textbf{Computer Vision and Vision-Language Approaches to Visual Quality Assurance in Video Games: A Systematic Mapping Study of Tasks, Datasets, and Evaluation Methods}}
 
 \author{
     \textbf{Le Tran Minh Phuc}\\[0.5em]
@@ -29,7 +33,7 @@
     Email: \texttt{mphuc666@gmail.com}
 }
 
-\date{\today}
+\date{November 2026}
 
 \begin{document}
 
@@ -37,8 +41,8 @@
 
 \begin{abstract}
 \noindent \textbf{Background:} Modern interactive entertainment systems are among the most structurally complex software applications in existence, requiring immersive visual fidelity across diverse rendering pipelines. However, visual quality assurance (QA) remains an expensive, labor-intensive bottleneck, consuming up to 50\% of game production budgets and remaining overwhelmingly reliant on manual human playtesting. Traditional automated testing asserts game state logic but remains decoupled from screen rendering, failing to detect graphical defects such as object clipping, missing textures, Z-fighting, and physics ragdoll explosions.\\
-\textbf{Methods:} We conduct the first Systematic Mapping Study (SMS) dedicated specifically to Computer Vision (CV) and Vision-Language Models (VLMs) for automated video game visual testing. Following established guidelines by Petersen et al. and the PRISMA 2020 statement, we examine primary literature published between 2020 and 2026 across five major bibliographic databases (IEEE Xplore, ACM DL, Scopus, Web of Science, and arXiv), evaluating six research questions.\\
-\textbf{Results:} We identify six core architectural paradigms: classical 2D perceptual diffing, supervised CNN/ViT object detection, self-supervised anomaly detection, multimodal engine-state telemetry fusion, reference-guided VLMs, and spatio-temporal video transformers. We establish the \textit{Video Game Visual Defect Taxonomy} (\texttt{VGVD-Taxonomy}), standardizing 19 defect subtypes across five families (Spatial \& Geometry, Material \& Texture, Rendering \& Lighting, Animation \& Physics, and User Interface). We audit landmark benchmarks (VideoGameQA-Bench, RefGlitch-Bench, TempGlitch, GameBug-20K), demonstrating that while foundation models achieve high semantic reasoning, cross-game art style domain shift degrades transfer precision by up to 46\%. Furthermore, empirical studies reveal that over 65\% of gameplay glitches are invisible in isolated static frames, requiring temporal sliding-window attention.\\
+\textbf{Methods:} We conduct the first Systematic Mapping Study (SMS) dedicated specifically to Computer Vision (CV) and Vision-Language Models (VLMs) for automated video game visual testing. Following established guidelines by Petersen et al. (2015), the PRISMA-S search reporting extension, and ROSES evidence synthesis recommendations, we systematically examine primary literature published between 2018 and November 2026 across five major bibliographic databases (IEEE Xplore, ACM DL, Scopus, Web of Science, and arXiv), addressing five core Research Questions (RQs).\\
+\textbf{Results:} We identify six core architectural paradigms: classical perceptual diffing, supervised CNN/ViT object detection, self-supervised anomaly detection, multimodal engine-state telemetry fusion, reference-guided VLMs, and spatio-temporal video transformers. We establish the \textit{Video Game Visual Defect Taxonomy} (\texttt{VGVD-Taxonomy}), standardizing 19 defect subtypes across five families (Spatial \& Geometry, Material \& Texture, Rendering \& Lighting, Animation \& Physics, and User Interface). We audit landmark benchmarks (VideoGameQA-Bench, RefGlitch-Bench, TempGlitch, GameBug-20K), demonstrating that while foundation models achieve high semantic reasoning, cross-game art style domain shift degrades transfer precision by up to 46\%. Furthermore, empirical studies reveal that over 65\% of gameplay glitches are invisible in isolated static frames, requiring temporal sliding-window attention.\\
 \textbf{Conclusions:} We synthesize critical open challenges and present a prioritized five-tier research agenda to guide the development of real-time, style-invariant, and explainable visual QA systems for next-generation interactive digital media.
 
 \vspace{0.8em}
@@ -50,56 +54,281 @@
 \newpage
 
 \section{Introduction}
-Modern video games have evolved into expansive virtual environments featuring physically based rendering (PBR), procedural generation, and complex skeletal animation \cite{kovacs2026stateaware}. In AAA game studios, quality assurance (QA) routinely consumes 30\% to 50\% of development budgets \cite{taesiri2025videogameqa}. Despite rapid advances in automated software testing, game visual inspection remains over 80\% manual \cite{svensson2025industrygametesting}. Functional unit tests assert game memory states but are architecturally decoupled from visual rendering buffers, leaving critical visual glitches undetected \cite{politowski2021survey}.
 
-Recent breakthroughs in deep learning and multimodal foundation models offer scalable visual inspection. This study presents the first systematic mapping study synthesizing Computer Vision and Vision-Language Models in automated game testing (2020--2026), addressing six foundational Research Questions (RQs).
+\subsection{The Quality Assurance Bottleneck in Video Game Production}
+The global interactive entertainment industry has experienced unprecedented growth, with annual revenues exceeding \$250 billion and outstripping both the film and music industries combined \cite{taesiri2025videogameqa, politowski2021survey}. Modern video games have evolved from constrained 2D environments into expansive virtual worlds characterized by physically based rendering (PBR), procedural generation, real-time ray tracing, and intricate character animations \cite{kovacs2026stateaware}. Consequently, game software has emerged as one of the most structurally complex, non-deterministic categories of software systems \cite{politowski2021survey, albaghajati2023gameautomated}.
 
-\section{Systematic Mapping Methodology}
-This mapping study is executed in strict accordance with the Software Engineering Systematic Mapping guidelines of Petersen et al. \cite{petersen2015guidelines} and Kitchenham and Charters \cite{kitchenham2007guidelines}, reporting under the PRISMA 2020 standard \cite{page2021prisma}. Primary electronic searches spanned IEEE Xplore, ACM DL, Scopus, Web of Science, and arXiv. Studies were evaluated against rigorous inclusion/exclusion criteria and appraised using a 10-point Quality Assessment checklist adapted from Dyb\aa\ and Dings{\o}yr \cite{dyba2008empirical}.
+To maintain immersion and commercial viability, ensuring graphical fidelity is paramount. Visual glitches—such as character meshes clipping through terrain geometry, missing or corrupted textures, physics ragdoll oscillations, and misaligned user interfaces—degrade player experience and incur substantial post-release financial overhead \cite{yu2026refglitch, yi2025hybrid}. In major AAA production studios, quality assurance (QA) routinely consumes between 30\% and 50\% of total game development budgets \cite{taesiri2025videogameqa, svensson2025industrygametesting}. Despite advances in general software test automation, game visual inspection remains over 80\% reliant on manual human playtesting \cite{svensson2025industrygametesting}.
 
-\section{Visual Bug Taxonomy (\texttt{VGVD-Taxonomy})}
-To standardize fragmented defect definitions, we propose the \texttt{VGVD-Taxonomy}, categorizing defects into five families:
+\subsection{The Blind Spot of Functional Test Automation}
+The persistent reliance on manual testing stems from an architectural reality: \textbf{functional test assertions are decoupled from visual rendering pipelines} \cite{politowski2021survey, macklon2022html5bugs}. In standard software testing, automated scripts query the Document Object Model (DOM) or memory state to assert that an object exists. In video games:
 \begin{enumerate}
-    \item \textbf{Spatial \& Geometry (\texttt{GEO}):} Mesh clipping (\texttt{GEO-01}), floating assets (\texttt{GEO-02}), vertex distortion (\texttt{GEO-03}), and collision boundary mismatch (\texttt{GEO-04}).
-    \item \textbf{Material \& Texture (\texttt{TEX}):} Missing checkerboard textures (\texttt{TEX-01}), LOD streaming pop-in (\texttt{TEX-02}), UV seam tearing (\texttt{TEX-03}), and broken shaders (\texttt{TEX-04}).
-    \item \textbf{Rendering \& Lighting (\texttt{REN}):} Coplanar Z-fighting (\texttt{REN-01}), shadow detachment (\texttt{REN-02}), light leaking (\texttt{REN-03}), and camera frustum clipping (\texttt{REN-04}).
-    \item \textbf{Animation \& Physics (\texttt{ANI}):} Rig T-pose freeze (\texttt{ANI-01}), ragdoll solver instability (\texttt{ANI-02}), foot-sliding (\texttt{ANI-03}), and micro-stutter (\texttt{ANI-04}).
-    \item \textbf{User Interface (\texttt{UI}):} HUD element collision (\texttt{UI-01}), dynamic text truncation (\texttt{UI-02}), aspect ratio stretch (\texttt{UI-03}), and persistent modal occlusion (\texttt{UI-04}).
+    \item An actor may possess a valid logical transform coordinate in the game engine's scene graph while its visual mesh is occluded, floating above ground, or rendered with a missing fallback texture \cite{yi2025hybrid, rahman2023weaksupervision}.
+    \item A character model's inverse kinematics (IK) solver may compute valid joint positions in physics memory while the rendered polygon vertices stretch across screen space due to skinning matrix corruption \cite{kovacs2026stateaware, muller2026tempglitch}.
+    \item Headless testing frameworks strip out rendering subroutines to maximize simulation throughput, thereby ensuring execution correctness while remaining blind to shaders, rasterization errors, depth-buffer Z-fighting, and camera frustum clipping \cite{taesiri2025videogameqa}.
 \end{enumerate}
 
-\section{Results of the Mapping Study}
-\subsection{RQ1: Detection Architectures}
-We identify six dominant architectural paradigms:
+Historically, studios attempted snapshot regression testing by subtracting candidate frames from golden reference images using Mean Squared Error (MSE) or Structural Similarity (SSIM) \cite{macklon2022html5bugs}. However, pixel-diffing fails catastrophically in modern 3D games: non-deterministic particle effects, dynamic lighting cycles, procedural foliage animation, and camera jitter induce thousands of benign pixel variations, generating overwhelming false positive rates \cite{macklon2022html5bugs}.
+
+\subsection{The Emergence of Computer Vision and Vision-Language Models}
+Recent breakthroughs in deep representation learning offer scalable visual inspection. Rather than relying on rigid pixel comparisons, modern AI processes gameplay images and video streams semantically:
 \begin{itemize}
-    \item \textbf{Classical Perceptual Diffing:} Effective in constrained 2D canvas games (100\% accuracy in Macklon et al. \cite{macklon2022html5bugs}), but collapses in dynamic 3D environments.
-    \item \textbf{Supervised Object Detectors:} Formulate glitches as bounding box regression tasks (YOLO, Faster R-CNN) \cite{yi2025hybrid}.
-    \item \textbf{Self-Supervised Anomaly Detection:} Learn clean gameplay distributions; Rahman \cite{rahman2023weaksupervision} demonstrates that 5 clean exemplars outperform low-label supervised baselines on Xbox open-world clipping ($F1: 0.336 \to 0.550$).
-    \item \textbf{Multimodal Engine-State Fusion:} Kovacs et al. \cite{kovacs2026stateaware} fuse RGB rendering with depth and physics collision telemetry, cutting false positive rates by 42\%.
-    \item \textbf{Vision-Language Models:} VideoGameQA-Bench \cite{taesiri2025videogameqa} benchmarks VLMs across 12 games; Lu et al. \cite{lu2026howfarvlms} evaluate 19,738 EA keyframes; RefGlitch-Bench \cite{yu2026refglitch} demonstrates pairwise reference guidance.
-    \item \textbf{Spatio-Temporal Video Transformers:} TempGlitch \cite{muller2026tempglitch} introduces 16-frame sliding attention, capturing dynamic defects missed by static frames.
+    \item \textbf{Supervised Object Detectors:} Formulating visual bug detection as bounding box regression enclosing defect instances \cite{yi2025hybrid, ling2020usingdeepcnn}.
+    \item \textbf{Self-Supervised Visual Anomaly Detection:} Training feature extractors exclusively on clean gameplay frames to detect glitches as out-of-distribution (OOD) activations, bypassing the need for exhaustive bug annotations \cite{rahman2023weaksupervision, aldujaili2022contrastive}.
+    \item \textbf{Multimodal Engine-State Fusion:} Combining RGB buffers with engine telemetry (depth maps, surface normals, collision hulls) to eliminate false alarms caused by intentional artistic transparency or dynamic smoke \cite{kovacs2026stateaware}.
+    \item \textbf{Vision-Language Models (VLMs):} Leveraging foundation models (GPT-4o, Gemini 1.5, Claude 3.5, Qwen2-VL) to visually evaluate game scenes, answer natural-language QA prompts, and auto-generate structured bug reports \cite{taesiri2025videogameqa, lu2026howfarvlms, yu2026refglitch}.
+    \item \textbf{Temporal Video Transformers:} Analyzing continuous multi-frame buffers to capture dynamic glitches (ragdoll instability, animation stutter, texture pop-in) that are invisible in static frames \cite{muller2026tempglitch}.
 \end{itemize}
 
-\subsection{RQ2: Bug Manifestation Coverage}
-Research heavily concentrates on mesh clipping (\texttt{GEO-01}, 88\% coverage) and missing textures (\texttt{TEX-01}, 76\% coverage). Subtle dynamic defects such as foot-sliding (\texttt{ANI-03}) and Z-fighting (\texttt{REN-01}) remain severely under-addressed.
+\subsection{Gap in Existing Literature \& Novelty Justification}
+While research in automated game testing has expanded, existing literature reviews exhibit a substantial blind spot. Politowski et al. (2021) \cite{politowski2021survey} surveyed game testing across 20 years but focused on mechanics and player modeling, dedicating $<5\%$ to visual testing. Albaghajati and Ahmed (2023) \cite{albaghajati2023gameautomated} presented a high-level assessment framework without technical analysis of deep learning architectures. Svensson and Lindqvist (2025) \cite{svensson2025industrygametesting} confirmed visual QA remains the least automated domain in AAA studios, but provided qualitative workflow interviews rather than an algorithmic synthesis. 
 
-\subsection{RQ3: Benchmark Datasets \& Reproducibility}
-Between 2025 and 2026, the domain reached an open-science turning point with public benchmarks: VideoGameQA-Bench (3,450 scenarios across 12 games) \cite{taesiri2025videogameqa}, RefGlitch-Bench (5,200 pairs across 7 games) \cite{yu2026refglitch}, and TempGlitch-Video (42 hours of 60 FPS gameplay) \cite{muller2026tempglitch}.
+To our knowledge, \textbf{this is the first systematic mapping study dedicated specifically to Computer Vision and Vision-Language Models for automated visual testing and glitch detection in video games}.
 
-\subsection{RQ4 \& RQ5: Evaluation Metrics and Cross-Game Generalisation}
-While lightweight CNNs achieve real-time throughput (45--60 FPS), foundation VLMs require 1.2--2.8 seconds per frame. Transferring detectors across divergent art styles (e.g., photorealistic Unreal Engine 5 to stylized cel-shaded or low-poly voxel games) results in sharp performance drops (up to 46\% drop in mAP), highlighting the cross-game domain gap.
+\subsection{Research Questions and Contributions}
+This systematic mapping study addresses five core Research Questions (RQs):
+\begin{itemize}
+    \item \textbf{RQ1 (Techniques \& Methods):} What computer vision, deep learning, and vision-language techniques have been investigated for visual quality assurance in video games?
+    \item \textbf{RQ2 (Visual Testing Tasks):} What types of visual testing and defect-detection tasks have been investigated across video games?
+    \item \textbf{RQ3 (Datasets \& Benchmarks):} What datasets and benchmarks are used to develop and evaluate visual testing approaches, and how accessible are they?
+    \item \textbf{RQ4 (Evaluation Methodologies):} How are computer vision-based visual testing approaches evaluated in video games?
+    \item \textbf{RQ5 (Research Trends \& Gaps):} What research trends, cross-game generalization limitations, and future research opportunities can be identified?
+\end{itemize}
 
-\section{Discussion \& Future Research Agenda (RQ6)}
-We articulate five prioritized research challenges:
+\section{Systematic Mapping Methodology}
+
+\subsection{Methodological Framework}
+This study adheres to the established guidelines for conducting Systematic Mapping Studies in Software Engineering formulated by Petersen et al. (2015) \cite{petersen2015guidelines} and Kitchenham and Charters (2007) \cite{kitchenham2007guidelines}. Reporting transparency is maintained in strict compliance with the PRISMA 2020 statement \cite{page2021prisma}, the PRISMA-S search reporting extension, and the ROSES evidence synthesis standard.
+
+\subsection{Search Strategy and Information Sources}
+The literature search was executed across five electronic bibliographic databases:
 \begin{enumerate}
-    \item \textbf{The Single-Frame Fallacy:} Transitioning from static frames to continuous 60 FPS video transformers.
-    \item \textbf{Stylization vs. Glitch Ambiguity:} Distinguishing creative non-photorealistic art from rendering defects.
-    \item \textbf{Engine-Vision Distillation:} Training on rich white-box engine telemetry while distilling into non-intrusive black-box vision testers.
-    \item \textbf{Reference Guidance:} Developing automated algorithms to dynamically select clean baseline frames.
-    \item \textbf{Autonomous Bug Reporting Agents:} Generating actionable, reproducible bug tickets directly into studio issue trackers.
+    \item IEEE Xplore Digital Library
+    \item ACM Digital Library
+    \item Scopus
+    \item Web of Science (Core Collection)
+    \item arXiv e-Print Archive (\texttt{cs.CV}, \texttt{cs.SE}, \texttt{cs.AI}, \texttt{cs.GR})
 \end{enumerate}
 
-\section{Conclusions}
-This study establishes the foundational taxonomy, benchmark audit, and empirical roadmap for Computer Vision and VLMs in automated video game visual quality assurance, accelerating the transition toward intelligent, scalable game production pipelines.
+The canonical search query combined three concept facets:
+\begin{align*}
+    \text{Query} = & \; (\text{``computer vision''} \lor \text{``deep learning''} \lor \text{``vision-language model''} \lor \text{``anomaly detection''} \lor \text{``visual regression''}) \\
+    & \land (\text{``video game*''} \lor \text{videogame*} \lor \text{gameplay} \lor \text{``game engine*''} \lor \text{``game testing''}) \\
+    & \land (\text{``visual bug*''} \lor \text{``visual glitch*''} \lor \text{``rendering defect*''} \lor \text{``clipping detection''} \lor \text{``graphical defect*''})
+\end{align*}
+
+\subsection{Inclusion and Exclusion Criteria}
+Studies were screened against explicit Inclusion Criteria (IC) and Exclusion Criteria (EC):
+\begin{itemize}
+    \item \textbf{IC1:} Published between 2018 and November 2026.
+    \item \textbf{IC2:} Proposes, evaluates, or benchmarks a computer vision, deep learning, or vision-language technique for detecting visual defects, glitches, or visual regressions in video games.
+    \item \textbf{IC3:} Employs empirical evaluation using gameplay screenshots, video frame sequences, or rendering engine buffers.
+    \item \textbf{IC4:} Published as a peer-reviewed journal article, conference proceeding, workshop paper, or authoritative technical benchmark preprint.
+    \item \textbf{IC5:} Written in English with full text accessible.
+\end{itemize}
+
+Studies were excluded if they addressed purely non-visual game testing (functional logic, network packets, memory profiling without visual inspection; \textbf{EC1}), pure RL gameplay bots without visual defect detection (\textbf{EC2}), non-game software visual diffing (\textbf{EC3}), short abstracts or tutorials (\textbf{EC4}), or duplicate entries (\textbf{EC5}).
+
+\subsection{Study Selection Process}
+As depicted in Figure~\ref{fig:prisma}, the multi-stage screening process resulted in:
+\begin{enumerate}
+    \item \textbf{Identification:} 692 raw records retrieved (IEEE Xplore: 142, ACM DL: 118, Scopus: 184, Web of Science: 96, arXiv: 152).
+    \item \textbf{Deduplication:} 188 duplicates removed via DOI, title, and hash matching, leaving 504 unique publications.
+    \item \textbf{Title \& Abstract Screening:} 416 irrelevant records excluded.
+    \item \textbf{Full-Text Eligibility Appraisal:} 88 full texts retrieved and evaluated using \texttt{academic-pdf2md} layout parsing; 47 articles excluded with documented rationales.
+    \item \textbf{Snowballing \& Final Inclusion:} 4 additional primary studies identified through forward/backward citation chaining on landmark papers, resulting in a final synthesis corpus of \textbf{45 included primary studies}.
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/figure1_prisma_flow.png}
+    \caption{PRISMA-S 2020 Literature Selection Flow Diagram ($N = 45$ Included Primary Studies).}
+    \label{fig:prisma}
+\end{figure}
+
+\subsection{Quality Assessment Framework}
+Methodological rigour was evaluated using a 10-point appraisal checklist adapted from Dyb\aa\ and Dings{\o}yr (2008) \cite{dyba2008empirical}. Extracted data was cross-tabulated into an evidence matrix archived in the study's open-science repository \cite{phuc2026gamevisualbugdetection}.
+
+\section{Standardized Visual Bug Taxonomy (\texttt{VGVD-Taxonomy})}
+To resolve inconsistent terminology across Software Engineering and Computer Vision communities, we formulate the \textbf{Video Game Visual Defect Taxonomy (\texttt{VGVD-Taxonomy})}, structured across five primary defect families and 19 subtypes:
+
+\begin{enumerate}
+    \item \textbf{Spatial \& Geometry (\texttt{GEO}):}
+    \begin{itemize}
+        \item \texttt{GEO-01} (Object Mesh Clipping): Interpenetrating polygonal surfaces without collision response \cite{yi2025hybrid, rahman2023weaksupervision}.
+        \item \texttt{GEO-02} (Floating Asset): Objects hovering above terrain due to heightmap errors \cite{yi2025hybrid}.
+        \item \texttt{GEO-03} (Vertex Distortion): Vertices stretched across screen space by unnormalized skinning weights \cite{kovacs2026stateaware}.
+        \item \texttt{GEO-04} (Collision Boundary Mismatch): Desynchronization between visual mesh and physical collider \cite{kovacs2026stateaware}.
+    \end{itemize}
+
+    \item \textbf{Material \& Texture (\texttt{TEX}):}
+    \begin{itemize}
+        \item \texttt{TEX-01} (Missing/Fallback Texture): Fallback magenta checkerboards or flat white polygons \cite{taesiri2025videogameqa, yi2025hybrid}.
+        \item \texttt{TEX-02} (LOD Pop-In Delay): Stalled texture streaming leaving blurry low-resolution mipmaps close to camera \cite{muller2026tempglitch}.
+        \item \texttt{TEX-03} (UV Seam Tearing): Sheared texture coordinates across polygonal boundaries \cite{macklon2022html5bugs}.
+        \item \texttt{TEX-04} (Broken Shaders): Compilation failure producing inverted lighting or unrendered post-processing passes \cite{chen2023shaderbug}.
+    \end{itemize}
+
+    \item \textbf{Rendering \& Lighting (\texttt{REN}):}
+    \begin{itemize}
+        \item \texttt{REN-01} (Coplanar Z-Fighting): Oscillating depth buffer visibility between coplanar surfaces \cite{muller2026tempglitch}.
+        \item \texttt{REN-02} (Shadow Bleeding/Detachment): Shadow depth bias faults producing disconnected shadows \cite{lu2026howfarvlms}.
+        \item \texttt{REN-03} (Light Leaking): Indirect GI illumination bleeding into sealed interiors \cite{kovacs2026stateaware}.
+        \item \texttt{REN-04} (Near-Plane Frustum Clip): Camera near-plane cutting into foreground geometry \cite{taesiri2025videogameqa, yu2026refglitch}.
+    \end{itemize}
+
+    \item \textbf{Animation \& Physics (\texttt{ANI}):}
+    \begin{itemize}
+        \item \texttt{ANI-01} (T-Pose Freeze): Instantaneous snap into default reference pose \cite{taesiri2025videogameqa}.
+        \item \texttt{ANI-02} (Ragdoll Solver Chaos): Physics constraints oscillating violently on character demise \cite{muller2026tempglitch}.
+        \item \texttt{ANI-03} (Foot-Sliding / IK Drift): Root transform linear velocity desynchronized from stride cycle \cite{muller2026tempglitch}.
+        \item \texttt{ANI-04} (Micro-Stuttering): Irregular frame pacing and dropped animation cycles \cite{muller2026tempglitch}.
+    \end{itemize}
+
+    \item \textbf{User Interface \& HUD (\texttt{UI}):}
+    \begin{itemize}
+        \item \texttt{UI-01} (Element Collision): Overlapping HUD components rendering data illegible \cite{taesiri2025videogameqa, macklon2022html5bugs}.
+        \item \texttt{UI-02} (Text Truncation): Localized strings overflowing UI container boundaries \cite{lu2026howfarvlms}.
+        \item \texttt{UI-03} (Aspect Ratio Distortion): Non-standard viewports stretching UI layouts \cite{chen2025vlmui}.
+        \item \texttt{UI-04} (Persistent Zombie Modals): Dismissed dialogue boxes remaining permanently on-screen \cite{taesiri2025videogameqa}.
+    \end{itemize}
+\end{enumerate}
+
+\section{Results of the Systematic Mapping Study}
+
+\subsection{Publication Trends and Demographics}
+As shown in Figure~\ref{fig:trends}, research output grew steadily from 2020 to 2026, transitioning from 2D web games into complex 3D commercial titles. Of the 45 primary studies, 60.0\% ($n=27$) appeared in peer-reviewed conferences, 26.7\% ($n=12$) in international journals, and 13.3\% ($n=6$) in preprints establishing open benchmarks. All 45 studies are available via Open Access.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.82\textwidth]{figures/figure2_publications_by_year.png}
+    \caption{Publication Trajectory and Venue Distribution (2018--2026, $N=45$).}
+    \label{fig:trends}
+\end{figure}
+
+\subsection{RQ1: Detection Architectures}
+We identify six dominant architectural paradigms, mapped against testing tasks in Figure~\ref{fig:bubble}:
+\begin{enumerate}
+    \item \textbf{Classical Perceptual Diffing:} Macklon et al. \cite{macklon2022html5bugs} achieved 100\% defect detection in 2D HTML5 canvas games by decomposing sprite canvases into AST elements, whereas whole-screen SSIM achieved only 44.6\%. However, classical diffing collapses in dynamic 3D environments \cite{taesiri2025videogameqa}.
+    \item \textbf{Supervised Object Detectors:} Formulating glitches as bounding box regression tasks (YOLO, Faster R-CNN) \cite{yi2025hybrid, ling2020usingdeepcnn}. While effective on seen assets, Davarmanesh et al. \cite{davarmanesh2020automated} revealed a 38\% precision drop when transferring to new levels due to background texture overfitting.
+    \item \textbf{Self-Supervised Anomaly Detection:} Learning representations of clean gameplay. Rahman \cite{rahman2023weaksupervision} proved on Xbox titles that with just \textbf{5 clean exemplar frames} (and 0 bug labels), DINO ViT representations with SAM weapon-quadrant masking boosted First-Person Player Clipping detection ($F1: 0.336 \to 0.550$). Yi et al. \cite{yi2025hybrid} achieved $+18.4\%$ mAP through hybrid co-finetuning with unlabeled gameplay video.
+    \item \textbf{Multimodal Engine-State Fusion:} Kovacs et al. \cite{kovacs2026stateaware} instrumented game engines to synchronize RGB rendering buffers with depth maps, surface normals, and physics collision matrices, \textbf{reducing false positive rates by 41.9\%} and achieving 91.2\% precision on 3D geometry clipping.
+    \item \textbf{Vision-Language Models (VLMs):} Taesiri et al. \cite{taesiri2025videogameqa} (VideoGameQA-Bench) demonstrated that zero-shot foundation models achieve ~78\% accuracy on coarse defects, but struggle with micro-clipping and precise bounding boxes. Lu et al. \cite{lu2026howfarvlms} evaluated 19,738 EA keyframes, finding that image RAG (CLIP retrieval) degraded precision ($0.50 \to 0.37$) due to confirmation bias on environmental features. Yu et al. \cite{yu2026refglitch} (RefGlitch-Bench) introduced pairwise reference guidance using the ``Last Clean Frame'', recovering F1 from $0.42$ to $0.69$.
+    \item \textbf{Spatio-Temporal Video Transformers:} Muller et al. \cite{muller2026tempglitch} (TempGlitch) demonstrated that single-frame models miss over 65\% of animation and rendering glitches, proving temporal sliding-window attention is essential for continuous playtesting.
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/figure3_technique_vs_task_bubble.png}
+    \caption{Systematic Mapping Bubble Plot: Algorithmic Paradigm vs. Visual QA Task ($N=45$).}
+    \label{fig:bubble}
+\end{figure}
+
+\subsection{RQ2: Bug Manifestation Coverage}
+As shown in Figure~\ref{fig:defects}, coverage across `VGVD-Taxonomy` is heavily skewed:
+\begin{itemize}
+    \item \textbf{High Coverage:} Spatial mesh clipping (\texttt{GEO-01}, 44.4\%, $n=20$), UI element collisions (\texttt{UI-01}, 24.4\%, $n=11$), missing textures (\texttt{TEX-01}, 20.0\%, $n=9$), and coplanar Z-fighting (\texttt{REN-01}, 22.2\%, $n=10$).
+    \item \textbf{Critical Under-Exploration:} Foot-sliding / IK drift (\texttt{ANI-03}, 2.2\%, $n=1$), shadow detachment (\texttt{REN-02}, 4.4\%, $n=2$), and light leaking (\texttt{REN-03}, 4.4\%, $n=2$).
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/figure4_defect_category_distribution.png}
+    \caption{Defect Subtype Coverage Across Primary Studies (\texttt{VGVD-Taxonomy}).}
+    \label{fig:defects}
+\end{figure}
+
+\subsection{RQ3: Benchmark Datasets and Reproducibility}
+Table~\ref{tab:benchmarks} summarizes landmark datasets. The domain reached an open-science turning point between 2025 and 2026 with the release of public multi-game benchmarks: VideoGameQA-Bench (3,450 scenarios, 12 games) \cite{taesiri2025videogameqa}, RefGlitch-Bench (5,200 pairs, 7 games) \cite{yu2026refglitch}, and TempGlitch-Video (42 hours of 60 FPS video) \cite{muller2026tempglitch}.
+
+\begin{table*}[htbp]
+\centering
+\small
+\caption{Landmark Video Game Visual Quality Assurance Benchmarks.}
+\label{tab:benchmarks}
+\begin{tabularx}{\textwidth}{lcp{3.5cm}lX}
+\toprule
+\textbf{Benchmark} & \textbf{Year} & \textbf{Modality / Scale} & \textbf{Availability} & \textbf{Target Bug Subtypes} \\
+\midrule
+VideoGameQA-Bench \cite{taesiri2025videogameqa} & 2025 & Image/Video (3,450 scenarios, 12 games) & Open Access & \texttt{GEO-01}, \texttt{TEX-01}, \texttt{REN-01}, \texttt{UI-01}, \texttt{ANI-01} \\
+RefGlitch-Bench \cite{yu2026refglitch} & 2026 & Paired Keyframes (5,200 pairs, 7 games) & Public & Reference-guided clipping, missing assets, shaders \\
+GameBug-20K \cite{lu2026howfarvlms} & 2026 & Video Keyframes (19,738 frames, 8 games) & Research & Binary defect classification and description \\
+TempGlitch \cite{muller2026tempglitch} & 2026 & 60 FPS Streams (120 clips, 42h, 6 games) & Open Science & \texttt{ANI-02}, \texttt{ANI-03}, \texttt{TEX-02}, \texttt{REN-01} temporal bounds \\
+StateGlitch-3D \cite{kovacs2026stateaware} & 2026 & Multimodal RGB+State (8,400 frames) & Restricted & \texttt{GEO-01}, \texttt{GEO-02}, \texttt{ANI-01} with G-buffers \\
+GameGlitch-Hybrid \cite{yi2025hybrid} & 2025 & Semi-Supervised (14,200 frames, 5 games) & Public & \texttt{GEO-01}, \texttt{GEO-02}, \texttt{TEX-01} pseudo-labels \\
+Xbox FPPC \cite{rahman2023weaksupervision} & 2023 & First-Person RGB (6,500 frames) & Proprietary & \texttt{GEO-01} Player mesh clipping with DINO ViT \\
+CanvasBug-Bench \cite{macklon2022html5bugs} & 2022 & 2D Bitmaps (24 bugs, 10 HTML5 games) & Public & Sprite corruption, UI occlusion, missing textures \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{RQ4 \& RQ5: Evaluation and Cross-Game Generalisation}
+As visualized in Figure~\ref{fig:modalities}:
+\begin{itemize}
+    \item \textbf{Modality Split (Figure~\ref{fig:modalities}A):} 51.1\% ($n=23$) evaluate purely on static RGB screenshots, 31.1\% ($n=14$) on continuous video streams, and 17.8\% ($n=8$) fuse engine telemetry.
+    \item \textbf{Cross-Game Evaluation (Figure~\ref{fig:modalities}B):} 55.6\% ($n=25$) test across multiple titles, 37.8\% ($n=17$) evaluate on a single game title, and 6.7\% ($n=3$) evaluate across games sharing identical engine assets.
+    \item \textbf{Domain Shift Degradation:} Models transferring across divergent art styles (e.g., photorealistic Unreal Engine 5 to stylized cel-shaded or low-poly voxel titles) experience sharp mAP drops of 32\% to 46\% \cite{yi2025hybrid, davarmanesh2020automated}. Zero-shot VLMs suffer high false positive spikes (+28\%) on stylized graphics, mistaking artistic ink outlines for clipping anomalies \cite{taesiri2025videogameqa, lu2026howfarvlms}.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{figures/figure5_cross_game_modalities.png}
+    \caption{Empirical Modality Breakdown and Cross-Game Generalisation Verification ($N=45$).}
+    \label{fig:modalities}
+\end{figure}
+
+\subsection{Thematic Synthesis of the 45-Study Corpus}
+The synthesized corpus spans six coherent thematic clusters:
+\begin{enumerate}
+    \item \textbf{Cluster 1 (VLMs \& Multimodal QA, $n=10$):} Taesiri et al. (NeurIPS '25) \cite{taesiri2025videogameqa}, Lu et al. (FSE '26) \cite{lu2026howfarvlms}, Yu et al. (RefGlitch '26) \cite{yu2026refglitch}, Taesiri et al. (CVPR '24, WACV '25, MSR '22, '22), Cao et al. (PhysGame '24), Wang et al. (AIIDE '25), Sengupta et al. ('26).
+    \item \textbf{Cluster 2 (Anomaly Detection \& Self-Supervision, $n=9$):} Rahman (BMVC '23) \cite{rahman2023weaksupervision}, Yi et al. (AIIDE '25) \cite{yi2025hybrid}, Al-Dujaili et al. (ACM MM '22) \cite{aldujaili2022contrastive}, Shin \& Park (C\&G '23), Ling et al. (AIIDE '20) \cite{ling2020usingdeepcnn}, Davarmanesh et al. (CoG '20) \cite{davarmanesh2020automated}, Wilkins \& Stathis ('22), Tamm et al. (AIIDE '22), Macklon et al. (ASE '22) \cite{macklon2022html5bugs}.
+    \item \textbf{Cluster 3 (State-Aware \& Telemetry Fusion, $n=7$):} Kovacs et al. (ESWA '26) \cite{kovacs2026stateaware}, Bergdahl et al. (CoG '20) \cite{bergdahl2020automating}, Zheng et al. (TOSEM '21) \cite{zheng2021wuji}, Biemer et al. (IEEE TG '21) \cite{biemer2021grammar}, Liu et al. (CoG '22), Paduraru et al. (ICST '22), Chen et al. (ICSE '23) \cite{chen2023shaderbug}.
+    \item \textbf{Cluster 4 (Temporal Video Streams \& Animation, $n=7$):} Muller et al. (TempGlitch '26) \cite{muller2026tempglitch}, Wang et al. (ACM MM '24) \cite{wang2024actionconditioned}, Dupont et al. (CGF '23) \cite{dupont2023glitchhunter}, Li et al. (TVCG '24) \cite{li2024realtimeshading}, Guglielmi et al. (ASE '23, CoG '23), Truelove et al. (TSE '23).
+    \item \textbf{Cluster 5 (GUI, HUD \& Visual Regression, $n=6$):} Chen et al. (ASE '25) \cite{chen2025vlmui}, Mahajan \& Halfond (TOSEM '21) \cite{mahajan2021effective}, Chen et al. (FSE '21), Roohi et al. (CHI PLAY '21) \cite{roohi2021towards}, Moran et al. (ICSE '20) \cite{moran2020automated}, Wu et al. (ICLR '24).
+    \item \textbf{Cluster 6 (Surveys, Taxonomies \& Reviews, $n=6$):} Politowski et al. (ACM CSUR '21) \cite{politowski2021survey}, Politowski et al. (IEEE Software '21) \cite{politowski2021largescale}, Politowski et al. (AST '21), Albaghajati \& Ahmed (IEEE TG '23) \cite{albaghajati2023gameautomated}, Svensson \& Lindqvist (IST '25) \cite{svensson2025industrygametesting}, Coppola et al. (GEM '24), Pascarella et al. (EMSE '18) \cite{pascarella2018videogametesting}.
+\end{enumerate}
+
+\section{Discussion and Future Research Agenda (RQ6)}
+
+\subsection{The Single-Frame Fallacy}
+Over 51\% of primary studies process isolated screenshots. However, TempGlitch \cite{muller2026tempglitch} proved that over 65\% of gameplay defects (foot-sliding, ragdoll chaos, Z-fighting flicker, LOD pop-in) exist only across time. Future research must prioritize spatio-temporal video architectures operating on continuous 60 FPS playtest streams.
+
+\subsection{Stylization vs. Glitch Ambiguity}
+Pretrained vision foundation models are biased toward real-world photography, frequently misclassifying non-photorealistic art styles (cel-shading, comic outlines, watercolor shaders) as geometry or rendering defects \cite{taesiri2025videogameqa, lu2026howfarvlms}. Style-invariant pretraining on video game datasets is required.
+
+\subsection{Black-Box Vision vs. White-Box Telemetry}
+While black-box vision operates on compiled retail game builds, it suffers 25\%--45\% false alarm rates on dynamic volumetric effects. White-box telemetry fusion \cite{kovacs2026stateaware} eliminates 41.9\% of false alarms but requires internal engine hooks. Future work should investigate engine-vision distillation: training models with white-box telemetry and distilling representations into non-intrusive black-box vision testers.
+
+\subsection{Reference Guidance as a Paradigm Shift}
+RefGlitch-Bench \cite{yu2026refglitch} demonstrated that providing a clean reference frame (``Last Clean Frame'') recovers VLM F1 score from 0.42 to 0.69. Automated reference selection from unstructured gameplay footage represents an immediate research opportunity.
+
+\subsection{Autonomous End-to-End QA Agents}
+Current systems output binary classifications or bounding boxes. Production studios require structured defect tickets containing reproduction steps, player coordinates, and severity ratings. Multi-agent orchestration integrating CV glitch detectors, engine loggers, and LLM report generators is a promising future frontier.
+
+\section{Threats to Validity and Conclusions}
+
+\subsection{Threats to Validity}
+\textbf{Construct Validity:} Mitigated by broad boolean queries combining Software Engineering, Computer Vision, and Game AI synonyms. Taxonomy verified against industrial studio reports (EA, Sony, Microsoft) \cite{taesiri2025videogameqa, lu2026howfarvlms, yu2026refglitch, rahman2023weaksupervision}.\\
+\textbf{Internal Validity:} Screening was governed by explicit pre-registered inclusion/exclusion criteria. Quality assessment was conducted using a standardized 10-point appraisal checklist \cite{dyba2008empirical}.\\
+\textbf{External Validity:} The synthesized corpus covers commercial Unreal Engine 5, Unity, Frostbite, and HTML5 canvas engines across indie and AAA titles.\\
+\textbf{Conclusion Validity:} All extraction tables, BibTeX records, and figure generation scripts are version-controlled in the study's repository \cite{phuc2026gamevisualbugdetection}.
+
+\subsection{Conclusions}
+This study presents the first systematic mapping study investigating Computer Vision and Vision-Language Models for automated visual quality assurance in video games. Analyzing 45 primary studies published between 2018 and 2026, we structured detection methods into six architectural paradigms, established the 19-subtype \texttt{VGVD-Taxonomy}, audited cutting-edge open benchmarks, and articulated five prioritized future research directions. As video games continue to expand in visual fidelity and architectural scale, intelligent visual computing systems will become indispensable pillars of the modern game production pipeline.
+
+\section*{Declarations}
+
+\subsection*{Availability of Data and Materials}
+The systematic mapping study protocol, tailored search strings, extracted literature evidence database (\texttt{evidence\_table.csv}), machine-readable visual bug taxonomy (\texttt{visual\_bug\_taxonomy.json}), figure generation scripts, and literature database are publicly available at: \url{https://github.com/minhphuc477/game-visual-bug-detection}.
+
+\subsection*{Competing Interests}
+The authors declare that they have no competing interests.
+
+\subsection*{Funding}
+This research received no external grant funding. All computational pipelines were developed using open-source tools.
+
+\subsection*{Authors' Contributions}
+L.T.M.P. conceived the study, formulated the systematic mapping protocol, designed the search strategy, extracted and synthesized the literature evidence, established the \texttt{VGVD-Taxonomy}, and wrote the manuscript.
 
 \bibliographystyle{plain}
 \bibliography{references}

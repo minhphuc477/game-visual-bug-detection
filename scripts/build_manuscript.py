@@ -12,12 +12,13 @@ SECTIONS = [
     "06_conclusion.md",
 ]
 
-HEADER = """# Computer Vision-Based Visual Testing in Video Games: A Systematic Mapping Study of Detection Techniques, Datasets, and Evaluation Methods
+HEADER = """# Computer Vision and Vision-Language Approaches to Visual Quality Assurance in Video Games: A Systematic Mapping Study of Tasks, Datasets, and Evaluation Methods
 
 **Author:** Le Tran Minh Phuc  
 **Target Journal:** *Visual Computing for Industry, Biomedicine, and Art* (SpringerOpen / China Graphics Society)  
 **Backup Journal:** *Applied Computing and Informatics* (Emerald Publishing)  
 **Publication Model:** Diamond Open Access ($0 APC)  
+**Methodological Guidelines:** Petersen et al. (2015), PRISMA-S, and ROSES  
 **Date:** November 2026  
 
 ---
