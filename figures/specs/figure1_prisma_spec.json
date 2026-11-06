@@ -1,0 +1,230 @@
+{
+  "title": "Figure 1: PRISMA-S 2020 Flow Diagram for Primary Study Selection",
+  "canvas": { "width": 1000, "height": 860 },
+  "style": {
+    "font_family": "Arial, Helvetica, sans-serif",
+    "font_size": 12,
+    "bg_color": "#FFFFFF"
+  },
+  "groups": [
+    {
+      "id": "grp_ident",
+      "label": "STAGE 1: IDENTIFICATION",
+      "node_ids": ["node_db", "node_dup"],
+      "fill": "#F0F9FF",
+      "stroke": "#BAE6FD",
+      "padding": 20
+    },
+    {
+      "id": "grp_screen",
+      "label": "STAGE 2: SCREENING (TITLE & ABSTRACT)",
+      "node_ids": ["node_screen", "node_screen_excl"],
+      "fill": "#F8FAFC",
+      "stroke": "#E2E8F0",
+      "padding": 20
+    },
+    {
+      "id": "grp_elig",
+      "label": "STAGE 3: FULL-TEXT ELIGIBILITY",
+      "node_ids": ["node_elig", "node_elig_excl"],
+      "fill": "#F8FAFC",
+      "stroke": "#E2E8F0",
+      "padding": 20
+    },
+    {
+      "id": "grp_snow",
+      "label": "STAGE 4: SNOWBALLING & FINAL INCLUSION",
+      "node_ids": ["node_search_in", "node_snow", "node_final"],
+      "fill": "#F0FDF4",
+      "stroke": "#BBF7D0",
+      "padding": 20
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_db",
+      "label": "Databases Searched (N = 692)\nIEEE Xplore: 142 | ACM DL: 118\nScopus: 184 | Web of Science: 96\narXiv (cs.CV, cs.SE): 152",
+      "x": 300,
+      "y": 100,
+      "width": 320,
+      "height": 75,
+      "shape": "rounded",
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB",
+      "text_color": "#1E3A8A",
+      "font_size": 12
+    },
+    {
+      "id": "node_dup",
+      "label": "Duplicates Removed (n = 188)\nVia Title, DOI, & arXiv ID\nCanonical Deduplication",
+      "x": 750,
+      "y": 100,
+      "width": 260,
+      "height": 75,
+      "shape": "rounded",
+      "fill": "#F1F5F9",
+      "stroke": "#64748B",
+      "text_color": "#334155",
+      "font_size": 11
+    },
+    {
+      "id": "node_screen",
+      "label": "Records Screened by Title & Abstract\n(N = 504 records)",
+      "x": 300,
+      "y": 270,
+      "width": 320,
+      "height": 65,
+      "shape": "rounded",
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB",
+      "text_color": "#1E3A8A",
+      "font_size": 12
+    },
+    {
+      "id": "node_screen_excl",
+      "label": "Records Excluded (n = 416)\n• Non-visual / RL gameplay bots: 182\n• Pure functional logic assertions: 134\n• Non-game GUI / web tests: 68\n• Short papers / keynotes / tutorials: 32",
+      "x": 750,
+      "y": 270,
+      "width": 300,
+      "height": 85,
+      "shape": "rounded",
+      "fill": "#FFF7ED",
+      "stroke": "#EA580C",
+      "text_color": "#7C2D12",
+      "font_size": 11
+    },
+    {
+      "id": "node_elig",
+      "label": "Full-Text Articles Assessed for Eligibility\n(N = 88 articles)",
+      "x": 300,
+      "y": 450,
+      "width": 320,
+      "height": 65,
+      "shape": "rounded",
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB",
+      "text_color": "#1E3A8A",
+      "font_size": 12
+    },
+    {
+      "id": "node_elig_excl",
+      "label": "Full-Text Articles Excluded (n = 47)\n• Headless server / no visual oracle: 18\n• Game bot with no defect detection: 12\n• Synthetic dataset for robotics only: 9\n• Lacking empirical evaluation metrics: 8",
+      "x": 750,
+      "y": 450,
+      "width": 300,
+      "height": 85,
+      "shape": "rounded",
+      "fill": "#FFF7ED",
+      "stroke": "#EA580C",
+      "text_color": "#7C2D12",
+      "font_size": 11
+    },
+    {
+      "id": "node_search_in",
+      "label": "Eligible Studies from Databases\n(n = 41 primary studies)",
+      "x": 300,
+      "y": 620,
+      "width": 320,
+      "height": 60,
+      "shape": "rounded",
+      "fill": "#EFF6FF",
+      "stroke": "#2563EB",
+      "text_color": "#1E3A8A",
+      "font_size": 12
+    },
+    {
+      "id": "node_snow",
+      "label": "Snowballing Identification\n• Backward citation chaining: 2\n• Forward citation chaining: 2\n(n = 4 additional studies)",
+      "x": 750,
+      "y": 620,
+      "width": 260,
+      "height": 75,
+      "shape": "rounded",
+      "fill": "#F1F5F9",
+      "stroke": "#64748B",
+      "text_color": "#334155",
+      "font_size": 11
+    },
+    {
+      "id": "node_final",
+      "label": "Total Included Primary Studies (N = 45)\n• C1: Vision-Language Models & Multimodal QA (10)\n• C2: Anomaly Detection & Self-Supervision (9)\n• C3: State-Aware & Telemetry Fusion (7)\n• C4: Spatio-Temporal Video Transformers (7)\n• C5: GUI, HUD & Visual Regression (6)\n• C6: Empirical Taxonomies & Systematic Reviews (6)",
+      "x": 525,
+      "y": 770,
+      "width": 460,
+      "height": 110,
+      "shape": "rounded",
+      "fill": "#ECFDF5",
+      "stroke": "#059669",
+      "text_color": "#064E3B",
+      "font_size": 11
+    }
+  ],
+  "edges": [
+    {
+      "from": "node_db",
+      "to": "node_dup",
+      "label": "deduplication",
+      "style": "solid",
+      "color": "#64748B",
+      "thickness": 2
+    },
+    {
+      "from": "node_db",
+      "to": "node_screen",
+      "label": "504 unique",
+      "style": "solid",
+      "color": "#2563EB",
+      "thickness": 2
+    },
+    {
+      "from": "node_screen",
+      "to": "node_screen_excl",
+      "label": "exclude",
+      "style": "solid",
+      "color": "#EA580C",
+      "thickness": 2
+    },
+    {
+      "from": "node_screen",
+      "to": "node_elig",
+      "label": "88 passed",
+      "style": "solid",
+      "color": "#2563EB",
+      "thickness": 2
+    },
+    {
+      "from": "node_elig",
+      "to": "node_elig_excl",
+      "label": "exclude",
+      "style": "solid",
+      "color": "#EA580C",
+      "thickness": 2
+    },
+    {
+      "from": "node_elig",
+      "to": "node_search_in",
+      "label": "41 eligible",
+      "style": "solid",
+      "color": "#2563EB",
+      "thickness": 2
+    },
+    {
+      "from": "node_snow",
+      "to": "node_final",
+      "label": "+4 snowball",
+      "style": "solid",
+      "color": "#059669",
+      "thickness": 2,
+      "curve": true
+    },
+    {
+      "from": "node_search_in",
+      "to": "node_final",
+      "label": "+41 database",
+      "style": "solid",
+      "color": "#059669",
+      "thickness": 2,
+      "curve": true
+    }
+  ]
+}
