@@ -1,0 +1,28 @@
+[project]
+name = "game-visual-bug-detection"
+version = "0.1.0"
+description = "Research repository for Computer Vision and Vision-Language Models in Automated Video Game Visual Testing and Glitch Detection"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Le Tran Minh Phuc", email = "mphuc666@gmail.com" }
+]
+dependencies = [
+    "markitdown[pdf]>=0.1.6",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
+    "tqdm>=4.66.0",
+    "requests>=2.31.0",
+    "pandas>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.3.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

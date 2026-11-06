@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "taxonomy_name": "Video Game Visual Defect Taxonomy (VGVD-Taxonomy)",
+  "version": "1.0.0",
+  "categories": [
+    {
+      "id": "CAT_GEOMETRY",
+      "name": "Spatial & Geometry Anomalies",
+      "subtypes": [
+        { "code": "GEO-01", "name": "Object Clipping / Mesh Penetration", "temporal": false, "subtle": true },
+        { "code": "GEO-02", "name": "Floating Asset", "temporal": false, "subtle": true },
+        { "code": "GEO-03", "name": "Vertex Deformation / Mesh Explosion", "temporal": false, "subtle": false },
+        { "code": "GEO-04", "name": "Collision vs Visual Boundary Mismatch", "temporal": true, "subtle": true }
+      ]
+    },
+    {
+      "id": "CAT_TEXTURE",
+      "name": "Material & Texture Defects",
+      "subtypes": [
+        { "code": "TEX-01", "name": "Missing / Null Checkerboard Texture", "temporal": false, "subtle": false },
+        { "code": "TEX-02", "name": "LOD Stalling / Pop-in", "temporal": true, "subtle": true },
+        { "code": "TEX-03", "name": "UV Coordinate Stretching", "temporal": false, "subtle": true },
+        { "code": "TEX-04", "name": "Shader Compilation Glitch", "temporal": true, "subtle": false }
+      ]
+    },
+    {
+      "id": "CAT_RENDERING",
+      "name": "Rendering & Lighting Artifacts",
+      "subtypes": [
+        { "code": "REN-01", "name": "Z-Fighting Depth Flicker", "temporal": true, "subtle": true },
+        { "code": "REN-02", "name": "Shadow Acne / Disconnection", "temporal": false, "subtle": true },
+        { "code": "REN-03", "name": "Light Leaking / Bleeding", "temporal": false, "subtle": true },
+        { "code": "REN-04", "name": "Camera Frustum Near-Plane Clipping", "temporal": false, "subtle": false }
+      ]
+    },
+    {
+      "id": "CAT_ANIMATION",
+      "name": "Temporal, Physics & Animation Glitches",
+      "subtypes": [
+        { "code": "ANI-01", "name": "T-Pose / Reference Pose Freeze", "temporal": true, "subtle": false },
+        { "code": "ANI-02", "name": "Ragdoll Physics Explosion", "temporal": true, "subtle": false },
+        { "code": "ANI-03", "name": "Foot-Sliding / Inverse Kinematics Slip", "temporal": true, "subtle": true },
+        { "code": "ANI-04", "name": "Frame Drop / Cyclic Stutter", "temporal": true, "subtle": true }
+      ]
+    },
+    {
+      "id": "CAT_UI",
+      "name": "User Interface (UI) & HUD Anomalies",
+      "subtypes": [
+        { "code": "UI-01", "name": "UI Element Collision / Overlap", "temporal": false, "subtle": false },
+        { "code": "UI-02", "name": "Text Truncation / Overflow", "temporal": false, "subtle": true },
+        { "code": "UI-03", "name": "Aspect Ratio / Resolution Stretch", "temporal": false, "subtle": true },
+        { "code": "UI-04", "name": "Persistent Zombie Modal Occlusion", "temporal": true, "subtle": false }
+      ]
+    }
+  ]
+}
