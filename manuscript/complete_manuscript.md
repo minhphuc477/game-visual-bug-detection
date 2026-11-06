@@ -451,11 +451,21 @@ The reviewed primary literature evaluates detection systems using distinct metri
 
 ---
 
-## 4.5 RQ5: Cross-Game Generalisation & Domain Shift
-The single most pervasive empirical challenge documented across the literature is **cross-game transfer degradation**:
-- **Art Style Domain Shift:** Models trained on photorealistic rendering engines (Unreal Engine 5) suffer a catastrophic drop in precision (falling from $0.84$ to $0.38$ mAP) when evaluated on stylized cel-shaded (*Genshin Impact* style) or low-poly voxel games (*Minecraft* style) [7]. Detectors mistake sharp cel-shading boundary strokes for object clipping and low-polygon silhouettes for missing LOD geometry.
-- **Lighting and Camera Variations:** Dynamic weather and day-night lighting cycles alter surface reflectance, triggering false positive texture warnings in supervised detectors [16].
-- **Zero-Shot Transfer in VLMs:** Pretrained VLMs demonstrate superior zero-shot qualitative bug identification compared to CNNs, but suffer from stylistic hallucinations unless anchored by reference frames (RefGlitch-Bench [6]).
+---
+
+## 4.6 Comprehensive Synthesis of the 45-Study Curated Corpus
+To provide an exhaustive empirical map, our final synthesized corpus encompasses **45 primary studies** spanning 2020 to November 2026 (plus foundational anchor surveys), categorized across six thematic clusters:
+
+| Thematic Research Cluster | Studies Count | Included Studies | Primary Technical Innovations |
+|---|---|---|---|
+| **Cluster 1: Vision-Language Models & Multimodal QA** | 10 | Taesiri et al. (NeurIPS '25), Lu et al. (FSE '26), Yu et al. (RefGlitch '26), Taesiri et al. (CVPR '24, WACV '25, MSR '22, '22), Cao et al. (PhysGame '24), Wang et al. (AIIDE '25), Sengupta et al. ('26) | Zero-shot VLM prompting, JSON-CoT anti-suppression, LastCleanFrame reference pools, VLM-as-a-judge, embodied exploratory VLM agents, tiny latent world models. |
+| **Cluster 2: Anomaly Detection, Contrastive & Self-Supervised Learning** | 9 | Rahman (BMVC '23), Yi et al. (AIIDE '25), Al-Dujaili et al. (ACM MM '22), Shin & Park (Computers & Graphics '23), Ling et al. (AIIDE '20), Davarmanesh et al. (CoG '20), Wilkins & Stathis ('22), Tamm et al. (AIIDE '22), Macklon et al. (ASE '22) | Weak supervision with negative-space weapon priors (SAM + DINOv1), hybrid co-finetuning with latent MAE distillation (I-JEPA), multi-view PatchCore, canvas AST decomposition. |
+| **Cluster 3: State-Aware, Engine-Hooked & Telemetry-Fused Testing** | 7 | Kovacs et al. (ESWA '26), Bergdahl et al. (CoG '20), Zheng et al. (TOSEM '21), Biemer et al. (IEEE Trans. Games '21), Liu et al. (CoG '22), Paduraru et al. (ICST '22), Chen et al. (ICSE '23) | G-buffer depth & surface normal fusion (reducing false positives by 41.9%), PPO exploration agents on Frostbite, multi-objective evolutionary RL (Wuji), mutational shader fuzzing. |
+| **Cluster 4: Temporal Video Stream Analysis & Animation Glitches** | 7 | Muller et al. (TempGlitch '26), Wang et al. (ACM MM '24), Dupont et al. (Eurographics '23), Li et al. (TVCG '24), Guglielmi et al. (ASE '23, CoG '23), Truelove et al. (TSE '23) | Sliding-window Video Transformers, action-conditioned controller telemetry ViT, skeletal rig ST-GCN, 75 FPS real-time optical flow CNN, streamer ASR sentiment linking. |
+| **Cluster 5: GUI, HUD & Visual Regression Testing** | 6 | Chen et al. (ASE '25), Mahajan & Halfond (TOSEM '21), Chen et al. (FSE '21), Roohi et al. (CHI PLAY '21), Moran et al. (ICSE '20), Wu et al. (Q-Bench ICLR '24) | Aspect ratio scaling bounds, human contrast sensitivity function (CSF) differencing, visual layout hierarchy oracles, foundation model low-level perception audits. |
+| **Cluster 6: Empirical Surveys, Taxonomies & Systematic Literature Reviews** | 6 | Politowski et al. (IEEE Software '21, AST '21), Albaghajati & Ahmed (IEEE Trans. Games '23), Svensson & Lindqvist (IST '25), Coppola et al. (GEM '24), Pascarella et al. (EMSE '2018) | Empirical mining of 1M+ Steam reviews, industrial surveys showing >80% manual visual QA, comparative assessment frameworks, academic vs industrial defect schema harmonization. |
+
+All 45 primary studies are archived with verified bibliographic records in `literature/papers.bib` and systematically indexed in `literature/evidence_table.csv`.
 
 
 ---
