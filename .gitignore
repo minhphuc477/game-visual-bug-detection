@@ -50,8 +50,6 @@ ehthumbs.db
 *.tmp
 conversion.log
 
-# Raw PDFs: allow tracking directory structure but avoid committing massive PDFs
-# You can commit small reference PDFs or use git-lfs if desired.
-# Uncomment the line below to ignore all raw PDFs:
-# papers/**/*.pdf
+# Raw PDFs: ignore binary PDFs to keep repo lightweight and avoid 50MB+ GitHub limits
+papers/**/*.pdf
 !papers/**/.gitkeep

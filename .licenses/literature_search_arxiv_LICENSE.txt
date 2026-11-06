@@ -1,0 +1,7 @@
+arXiv API Terms of Use Notification
+Timestamp: 2026-11-06T22:08:55+07:00
+Workspace: f:\PhD
+
+Notice: Users and automated agents must adhere to arXiv's Terms of Use (https://info.arxiv.org/help/api/index.html).
+Rate limits (maximum 1 request per 3 seconds) are enforced.
+Always check the license of the papers retrieved by the skill for any restrictions.
